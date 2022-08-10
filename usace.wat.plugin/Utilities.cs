@@ -1,7 +1,9 @@
-﻿using Amazon.Runtime;
+﻿using Amazon;
+using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Internal;
 using Amazon.S3.Model;
+using Amazon.S3.Util;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -65,70 +67,46 @@ namespace usace.wat.plugin
             }
             Instance.HasInitialized = true;
         }
-        private static void AddS3Bucket(AWSConfig awsconfig)
+        //https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html#create-bucket-get-location-dotnet
+        /// <summary>
+        /// Adds an S3 Bucket with the configuration specified
+        /// </summary>
+        /// <param name="awsconfig"></param>
+        private static async void AddS3Bucket(AWSConfig awsconfig)
         {
-            Amazon.S3.
-            S3Region clientRegion = S3Region.FindValue(awsconfig.aws_region);
-            try
+            string bucketName = awsconfig.Aws_config_name;
+            RegionEndpoint bucketRegion = RegionEndpoint.GetBySystemName(awsconfig.Aws_region);
+            AmazonS3Client s3Client = new AmazonS3Client(bucketRegion);
+            if (!await (AmazonS3Util.DoesS3BucketExistV2Async(s3Client, bucketName)))
             {
-                AmazonS3Client s3Client = null;
-                if (awsconfig.aws_mock)
+                var putBucketRequest = new PutBucketRequest
                 {
-                    AWSCredentials credentials = new BasicAWSCredentials(awsconfig.aws_access_key_id, awsconfig.aws_secret_access_key_id);
-                    
-                    ClientConfiguration clientConfiguration = new ClientConfiguration();
-                    clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+                    BucketName = bucketName,
+                    UseClientRegion = true
+                };
+                try
+                {
+                    PutBucketResponse putBucketResponse = await s3Client.PutBucketAsync(putBucketRequest);
+                }
+                catch (AmazonS3Exception e)
+                {
+                    Console.WriteLine("Error encountered on server. Message:'{0}' when writing an object", e.Message);
+                }
 
-                    s3Client = AmazonS3ClientBuilder
-                        .standard()
-                        .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(awsconfig.aws_endpoint, clientRegion.name()))
-                        .withPathStyleAccessEnabled(awsconfig.aws_force_path_style)
-                        .withClientConfiguration(clientConfiguration)
-                        .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                        .build();
-                }
-                else
-                {
-                    AWSCredentials credentials = new BasicAWSCredentials(awsconfig.aws_access_key_id, awsconfig.aws_secret_access_key_id);
-                    s3Client = AmazonS3ClientBuilder
-                        .standard()
-                        .withRegion(clientRegion)
-                        .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                        .build();
-                }
-                Instance.setClient(awsconfig.aws_bucket, s3Client);
-            }
-            catch (AmazonServiceException e)
-            {
-                // The call was transmitted successfully, but Amazon S3 couldn't process 
-                // it, so it returned an error response.
-                throw e;
             }
         }
+
         //https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/dotnetv3/S3/UploadObjectExample/UploadObject.cs
+        //https://docs.aws.amazon.com/AmazonS3/latest/userguide/upload-objects.html
         public static void UploadToS3(string bucketName, string objectKey, byte[] fileBytes)
         {
-            try
-            {
-                //File file = new File(objectPath);
-                Stream stream = new MemoryStream(fileBytes);
-                AmazonS3Metadata meta = new AmazonS3Metadata();
-                PutObjectRequest putOb = new PutObjectRequest();
-                putOb.BucketName = bucketName; 
-                putOb.Key = objectKey;
-                PutObjectResponse response = Instance.getClient(bucketName).putObject(putOb);
-                Console.WriteLine(response.ETag);
-            }
-            catch (AmazonServiceException e)
-            {
-                Console.WriteLine(e.Message);
-            }
+
         }
         public static void Log(Message message)
         {
             if (message.level.CompareTo(Instance.getLogLevel()) >= 0)
             {
-                Console.WriteLine(message.ToString()); 
+                Console.WriteLine(message.ToString());
             }
         }
 
@@ -153,7 +131,7 @@ namespace usace.wat.plugin
                 fullObject = Instance.getClient(bucketName).getObject(getObjectRequest);
 
                 fullObject.Con
-                return fullObject.getObjectContent().readAllBytes();
+                    return fullObject.getObjectContent().readAllBytes();
             }
             catch (Exception e)
             {
