@@ -2,6 +2,9 @@
 using Amazon.S3;
 using Amazon.S3.Internal;
 using Amazon.S3.Model;
+using YamlDotNet.RepresentationModel;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 using static usace.wat.plugin.Message;
 
 namespace usace.wat.plugin
@@ -12,33 +15,47 @@ namespace usace.wat.plugin
         public Dictionary<string, IAmazonS3> Clients { get; private set; }
         public bool HasInitialized { get; private set; }
         public Level LogLevel { get; private set; } // need to adjust this set
-        public Utilities Instance { get; } = new Utilities();
+        public static Utilities Instance { get; } = new Utilities();
 
         public Utilities()
         {
             Clients = new Dictionary<string, IAmazonS3>();
         }
+        /// <summary>
+        /// Initializes utilities with the config at path "config.json"
+        /// </summary>
         public static void Initalize()
         {
-            InitalizeFromPath("config.json");
+            InitializeFromPath("config.json");
         }
+        //https://github.com/aaubry/YamlDotNet/blob/master/YamlDotNet.Samples/DeserializeObjectGraph.cs
+        /// <summary>
+        /// Initializes utilities with the conifg at the path provided
+        /// </summary>
+        /// <param name="path"> A path to a yaml file </param>
         public static void InitializeFromPath(string path)
         {
-            Config cfg = new Config();
-            FileStream file = File.OpenRead(path);
-
-            //ObjectMapper
+            string fileText = File.ReadAllText(path);
+            var deserializer = new DeserializerBuilder()
+                .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                .Build();
             try
             {
-                cfg = mapper.readValue(file, Config.GetType());
+                Config config = deserializer.Deserialize<Config>(fileText);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 Message message = Message.BuildMessage()
-
-                throw;
+                    .withMessage("Error Parsing Configuration Contents: at path " + path + " with error " + e.Message)
+                    .fromSender("Plugin Services")
+                    .build();
+                Log(message);
             }
         }
+        /// <summary>
+        /// Adds an S3 bucket for each of the AWS configs present in the Config provided. Sets Instance.HasInitialized to true
+        /// </summary>
+        /// <param name="config"></param>
         public static void Initialize(Config config)
         {
             Instance.Config = config;
@@ -46,7 +63,7 @@ namespace usace.wat.plugin
             {
                 AddS3Bucket(awsConfig);
             }
-            Instance.setHasInitalized(true);
+            Instance.HasInitialized = true;
         }
         private static void AddS3Bucket(AWSConfig awsconfig)
         {
