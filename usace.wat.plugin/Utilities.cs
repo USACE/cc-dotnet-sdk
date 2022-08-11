@@ -16,7 +16,7 @@ namespace usace.wat.plugin
         public Config Config { get; private set; }
         public Dictionary<string, IAmazonS3> Clients { get; private set; }
         public bool HasInitialized { get; private set; }
-        public Level LogLevel { get; private set; } // need to adjust this set
+        public Level LogLevel { get; private set; } // need to adjust this set to be consistent with Java implementation
         public static Utilities Instance { get; } = new Utilities();
 
         public Utilities()
@@ -98,9 +98,26 @@ namespace usace.wat.plugin
 
         //https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/dotnetv3/S3/UploadObjectExample/UploadObject.cs
         //https://docs.aws.amazon.com/AmazonS3/latest/userguide/upload-objects.html
-        public static void UploadToS3(string bucketName, string objectKey, byte[] fileBytes)
+        /// <summary>
+        /// uploads an object to the S3 bucket
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <param name="objectKey"></param>
+        /// <param name="fileBytes"></param>
+        public static async Task UploadToS3Async(string bucketName, string objectKey, byte[] fileBytes)
         {
+            System
+            var putRequest2 = new PutObjectRequest
+            {
+                BucketName = bucketName,
+                Key = objectKey,
+                ContentType = "text/plain",
+                InputStream = fileBytes
+            };
 
+            putRequest2.Metadata.Add("x-amz-meta-title", "someTitle");
+
+            PutObjectResponse response2 = await Instance.Clients[bucketName].PutObjectAsync(putRequest2);
         }
         public static void Log(Message message)
         {
