@@ -77,6 +77,16 @@ namespace usace.wat.plugin
             string bucketName = awsconfig.Aws_config_name;
             RegionEndpoint bucketRegion = RegionEndpoint.GetBySystemName(awsconfig.Aws_region);
             AmazonS3Client s3Client = new AmazonS3Client(bucketRegion);
+
+            if (awsconfig.Aws_mock)
+            {
+                AWSCredentials aWSCredentials = new BasicAWSCredentials(awsconfig.Aws_access_key_id, awsconfig.Aws_secret_access_key_id);
+                ClientConfig config = new();
+                config.SignerOverride();
+
+                s3Client = AmazonS3C
+            }
+
             if (!await (AmazonS3Util.DoesS3BucketExistV2Async(s3Client, bucketName)))
             {
                 var putBucketRequest = new PutBucketRequest
@@ -95,7 +105,6 @@ namespace usace.wat.plugin
 
             }
         }
-
         //https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/dotnetv3/S3/UploadObjectExample/UploadObject.cs
         //https://docs.aws.amazon.com/AmazonS3/latest/userguide/upload-objects.html
         /// <summary>
@@ -106,18 +115,60 @@ namespace usace.wat.plugin
         /// <param name="fileBytes"></param>
         public static async Task UploadToS3Async(string bucketName, string objectKey, byte[] fileBytes)
         {
-            System
-            var putRequest2 = new PutObjectRequest
+            try
             {
-                BucketName = bucketName,
-                Key = objectKey,
-                ContentType = "text/plain",
-                InputStream = fileBytes
-            };
+                var fileBytesAsStream = new MemoryStream(fileBytes);
+                var putRequest2 = new PutObjectRequest
+                {
+                    BucketName = bucketName,
+                    Key = objectKey,
+                    InputStream = fileBytesAsStream
+                };
+                PutObjectResponse response = await Instance.Clients[bucketName].PutObjectAsync(putRequest2);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
 
-            putRequest2.Metadata.Add("x-amz-meta-title", "someTitle");
+        }
+        public static async Task<Stream?> DownloadBytesFromS3(string bucketName, string key)
+        {
+            Message message = Message.BuildMessage()
+                .withMessage("Downloading from S3: " + bucketName + "/" + key)
+                .withErrorLevel(Level.INFO)
+                .fromSender("Plugin Services")
+                .build();
+            Log(message);
 
-            PutObjectResponse response2 = await Instance.Clients[bucketName].PutObjectAsync(putRequest2);
+            try
+            {
+                GetObjectRequest request = new GetObjectRequest
+                {
+                    BucketName = bucketName,
+                    Key = key
+                };
+                var client = Instance.Clients[bucketName];
+                GetObjectResponse response = await client.GetObjectAsync(request);
+                return response.ResponseStream;
+                
+            }
+            catch (AmazonS3Exception e)
+            {
+                // If bucket or object does not exist
+                Console.WriteLine("Error encountered ***. Message:'{0}' when reading object", e.Message);
+                return null;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Unknown encountered on server. Message:'{0}' when reading object", e.Message);
+                return null;
+            }
+        }
+        private static void writeInputStreamToDisk(Stream input, string outputDestination)
+        {
+            FileStream fileStream = File.Create(outputDestination);
+            input.CopyTo(fileStream);
         }
         public static void Log(Message message)
         {
@@ -126,6 +177,8 @@ namespace usace.wat.plugin
                 Console.WriteLine(message.ToString());
             }
         }
+
+
 
         //https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/dotnetv3/S3/GetObjectExample/GetObject.cs
         private static byte[] DownloadBytesFromS3(String bucketName, String key)
