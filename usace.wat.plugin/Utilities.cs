@@ -4,6 +4,7 @@ using Amazon.S3;
 using Amazon.S3.Internal;
 using Amazon.S3.Model;
 using Amazon.S3.Util;
+using System.Text;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -169,6 +170,17 @@ namespace usace.wat.plugin
         {
             FileStream fileStream = File.Create(outputDestination);
             input.CopyTo(fileStream);
+        }
+        private static ModelPayload ReadYamlModelPayloadFromBytes(byte[] bytes)
+        {
+            string yamlAsString = Encoding.ASCII.GetString(bytes);
+            var input = new StringReader(yamlAsString);
+            var deserializer = new DeserializerBuilder()
+                .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                .Build();
+
+            ModelPayload payload = deserializer.Deserialize<ModelPayload>(input);
+            return payload;
         }
         public static void Log(Message message)
         {
