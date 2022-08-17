@@ -17,25 +17,17 @@ namespace usace.wat.plugin
         public Config Config { get; private set; }
         public Dictionary<string, IAmazonS3> Clients { get; private set; }
         public bool HasInitialized { get; private set; }
-        public Level LogLevel { get; private set; } // need to adjust this set to be consistent with Java implementation
+        public Level LogLevel { get; private set; }
         public static Utilities Instance { get; } = new Utilities();
 
         public Utilities()
         {
             Clients = new Dictionary<string, IAmazonS3>();
         }
-        /// <summary>
-        /// Initializes utilities with the config at path "config.json"
-        /// </summary>
         public static void Initalize()
         {
             InitializeFromPath("config.json");
         }
-        //https://github.com/aaubry/YamlDotNet/blob/master/YamlDotNet.Samples/DeserializeObjectGraph.cs
-        /// <summary>
-        /// Initializes utilities with the conifg at the path provided
-        /// </summary>
-        /// <param name="path"> A path to a yaml file </param>
         public static void InitializeFromPath(string path)
         {
             string fileText = File.ReadAllText(path);
@@ -55,10 +47,6 @@ namespace usace.wat.plugin
                 Log(message);
             }
         }
-        /// <summary>
-        /// Adds an S3 bucket for each of the AWS configs present in the Config provided. Sets Instance.HasInitialized to true
-        /// </summary>
-        /// <param name="config"></param>
         public static void Initialize(Config config)
         {
             Instance.Config = config;
@@ -68,11 +56,6 @@ namespace usace.wat.plugin
             }
             Instance.HasInitialized = true;
         }
-        //https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html#create-bucket-get-location-dotnet
-        /// <summary>
-        /// Adds an S3 Bucket with the configuration specified
-        /// </summary>
-        /// <param name="awsconfig"></param>
         private static async void AddS3Bucket(AWSConfig awsconfig)
         {
             string bucketName = awsconfig.Aws_config_name;
@@ -106,24 +89,15 @@ namespace usace.wat.plugin
 
             }
         }
-        //https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/dotnetv3/S3/UploadObjectExample/UploadObject.cs
-        //https://docs.aws.amazon.com/AmazonS3/latest/userguide/upload-objects.html
-        /// <summary>
-        /// uploads an object to the S3 bucket
-        /// </summary>
-        /// <param name="bucketName"></param>
-        /// <param name="objectKey"></param>
-        /// <param name="fileBytes"></param>
-        public static async Task UploadToS3Async(string bucketName, string objectKey, byte[] fileBytes)
+        public static async Task UploadToS3Async(string bucketName, string objectKey, Stream stream)
         {
             try
             {
-                var fileBytesAsStream = new MemoryStream(fileBytes);
                 var putRequest2 = new PutObjectRequest
                 {
                     BucketName = bucketName,
                     Key = objectKey,
-                    InputStream = fileBytesAsStream
+                    InputStream = stream
                 };
                 PutObjectResponse response = await Instance.Clients[bucketName].PutObjectAsync(putRequest2);
             }
@@ -152,7 +126,7 @@ namespace usace.wat.plugin
                 var client = Instance.Clients[bucketName];
                 GetObjectResponse response = await client.GetObjectAsync(request);
                 return response.ResponseStream;
-                
+
             }
             catch (AmazonS3Exception e)
             {
@@ -174,7 +148,7 @@ namespace usace.wat.plugin
         private static ModelPayload ReadYamlModelPayloadFromStream(Stream stream)
         {
             StreamReader reader = new StreamReader(stream);
-            string yamlAsString = reader.ReadToEnd();;
+            string yamlAsString = reader.ReadToEnd(); ;
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
@@ -210,20 +184,96 @@ namespace usace.wat.plugin
             {
                 return payload;
             }
-            try
-            {
-
-            }
             Stream body = await DownloadBytesFromS3(config.Aws_bucket, filepath);
             return ReadYamlModelPayloadFromStream(body);
         }
         public static void Log(Message message)
         {
-            if (message.level.CompareTo(Instance.getLogLevel()) >= 0)
+            if (message.level.CompareTo(Instance.LogLevel) >= 0)
             {
                 Console.WriteLine(message.ToString());
             }
         }
+        public static async Task<Stream?> DownloadObjectAsync(ResourceInfo info)
+        {
+            switch (info.Store)
+            {
+                case StoreTypes.S3:
+                    return await DownloadBytesFromS3(info.Root, info.Path);
+                case StoreTypes.LOCAL:
+                    return null;
+                default:
+                    return null;
+            }
+        }
+        public static async Task UploadFile(ResourceInfo info, Stream stream)
+        {
+            switch (info.Store)
+            {
+                case StoreTypes.S3:
+                    await UploadToS3Async(info.Root, info.Path, stream);
+                    break;
+                case StoreTypes.LOCAL:
+                    try
+                    {
+                        writeInputStreamToDisk(stream, info.Root + Path.PathSeparator + info.Path);
+                    }
+                    catch (IOException e)
+                    {
+                        Message message = Message.BuildMessage()
+                        .withMessage("Error Uploading local file: " + info.Path + " " + e.Message)
+                        .withErrorLevel(Level.ERROR)
+                        .fromSender("Plugin Services")
+                        .build();
+                        Log(message);
+                    }
+                    break;
+                default:
+                    Message defaultmessage = Message.BuildMessage()
+                        .withMessage("Error Uploading local file to " + info.Store)
+                        .withErrorLevel(Level.ERROR)
+                        .fromSender("Plugin Services")
+                        .build();
+                    Log(defaultmessage);
+                    break;
+            }
+        }
+        public static async Task<EventConfiguration> LoadEventConfiguration(ResourceInfo resourceInfo)
+        {
+            Message message = Message.BuildMessage()
+                .withMessage("reading event configuration at path: " + resourceInfo.Path)
+                .withErrorLevel(Level.INFO)
+                .fromSender("Plugin Services")
+                .build();
+            Log(message);
+            if (!Instance.HasInitialized)
+            {
+                InitializeFromPath("config.json");
+            }
+            Stream body = await DownloadBytesFromS3(resourceInfo.Root, resourceInfo.Path);
 
+            try
+            {
+                StreamReader reader = new StreamReader(body);
+                string yamlAsString = reader.ReadToEnd(); ;
+                var deserializer = new DeserializerBuilder()
+                    .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                    .Build();
+                EventConfiguration config = deserializer.Deserialize<EventConfiguration>(yamlAsString);
+                return config;
+            }
 
+            catch (Exception e)
+            {
+                Message message2 = Message.BuildMessage()
+                .withMessage("Error Parsing Event Configuration Contents: " + e.Message)
+                .withErrorLevel(Level.ERROR)
+                .fromSender("Plugin Services")
+                .build();
+                Log(message2);
+            }
+            return new EventConfiguration();
+        }
+    }
 }
+
