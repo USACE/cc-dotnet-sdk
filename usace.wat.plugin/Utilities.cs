@@ -171,16 +171,51 @@ namespace usace.wat.plugin
             FileStream fileStream = File.Create(outputDestination);
             input.CopyTo(fileStream);
         }
-        private static ModelPayload ReadYamlModelPayloadFromBytes(byte[] bytes)
+        private static ModelPayload ReadYamlModelPayloadFromStream(Stream stream)
         {
-            string yamlAsString = Encoding.ASCII.GetString(bytes);
-            var input = new StringReader(yamlAsString);
+            StreamReader reader = new StreamReader(stream);
+            string yamlAsString = reader.ReadToEnd();;
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
-
-            ModelPayload payload = deserializer.Deserialize<ModelPayload>(input);
+            ModelPayload payload = deserializer.Deserialize<ModelPayload>(yamlAsString);
             return payload;
+        }
+        public static async Task<ModelPayload?> LoadPayload(string filepath)
+        {
+            //use primary s3 bucket to find the payload
+            if (!Instance.HasInitialized)
+            {
+                InitializeFromPath(filepath);
+            }
+            Message message = Message.BuildMessage()
+                .withMessage("reading payload at path: " + filepath)
+                .withErrorLevel(Level.INFO)
+                .fromSender("Plugin Services")
+                .build();
+            Log(message);
+            ModelPayload payload = new ModelPayload();
+            if (Instance.Config.aws_configs.Length == 0)
+            {
+                Message message2 = Message.BuildMessage()
+                .withMessage("Configuration contains no AWS Configurations")
+                .withErrorLevel(Level.ERROR)
+                .fromSender("Plugin Services")
+                .build();
+                Log(message2);
+                return null;
+            }
+            AWSConfig config = Instance.Config.PrimaryConfig();
+            if (config == null)
+            {
+                return payload;
+            }
+            try
+            {
+
+            }
+            Stream body = await DownloadBytesFromS3(config.Aws_bucket, filepath);
+            return ReadYamlModelPayloadFromStream(body);
         }
         public static void Log(Message message)
         {
@@ -191,61 +226,4 @@ namespace usace.wat.plugin
         }
 
 
-
-        //https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/dotnetv3/S3/GetObjectExample/GetObject.cs
-        private static byte[] DownloadBytesFromS3(String bucketName, String key)
-        {
-            S3Object fullObject = null;
-            try
-            {
-                // Get an object and print its contents.
-                Message message = Message.BuildMessage()
-                .withMessage("Downloading from S3: " + bucketName + "/" + key)
-                .withErrorLevel(Level.INFO)
-                .fromSender("Plugin Services")
-                .build();
-                Log(message);
-
-                GetObjectRequest getObjectRequest = new GetObjectRequest();
-                getObjectRequest.BucketName = bucketName;
-                getObjectRequest.Key = key;
-
-                fullObject = Instance.getClient(bucketName).getObject(getObjectRequest);
-
-                fullObject.Con
-                    return fullObject.getObjectContent().readAllBytes();
-            }
-            catch (Exception e)
-            {
-                Message message = Message.BuildMessage()
-                .withMessage("Error Downloading from S3: " + e.getMessage())
-                .withErrorLevel(Level.ERROR)
-                .fromSender("Plugin Services")
-                .build();
-                Log(message);
-            }
-            finally
-            {
-                // To ensure that the network connection doesn't remain open, close any open input streams.
-                if (fullObject != null)
-                {
-                    try
-                    {
-                        fullObject.close();
-                    }
-                    catch (Exception e)
-                    {
-                        Message message = Message.BuildMessage()
-                        .withMessage("Error Closing S3 object: " + e.Message)
-                        .withErrorLevel(Level.ERROR)
-                        .fromSender("Plugin Services")
-                        .build();
-                        Log(message);
-                    }
-                }
-            }
-            return null;
-        }
-
-    }
 }
