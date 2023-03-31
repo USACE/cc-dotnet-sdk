@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "usace.cc.plugin", "usace.wat.plugin\usace.cc.plugin.csproj", "{92693522-98C1-458F-823A-5CD12C10FDD3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "usace.cc.plugin", "usace.cc.plugin\usace.cc.plugin.csproj", "{92693522-98C1-458F-823A-5CD12C10FDD3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "usace.cc.plugin.test", "usace.wat.plugin.test\usace.cc.plugin.test.csproj", "{1E243E58-1BF1-439A-A620-0302D2105294}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "usace.cc.plugin.test", "usace.cc.plugin.test\usace.cc.plugin.test.csproj", "{1E243E58-1BF1-439A-A620-0302D2105294}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
