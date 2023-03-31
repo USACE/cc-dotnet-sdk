@@ -8,9 +8,9 @@ using System.Text;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
-using static usace.wat.plugin.Message;
+using static usace.cc.plugin.Message;
 
-namespace usace.wat.plugin
+namespace usace.cc.plugin
 {
     public sealed class Utilities
     {
@@ -145,17 +145,17 @@ namespace usace.wat.plugin
             FileStream fileStream = File.Create(outputDestination);
             input.CopyTo(fileStream);
         }
-        private static ModelPayload ReadYamlModelPayloadFromStream(Stream stream)
+        private static Payload ReadYamlModelPayloadFromStream(Stream stream)
         {
             StreamReader reader = new StreamReader(stream);
             string yamlAsString = reader.ReadToEnd(); ;
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
-            ModelPayload payload = deserializer.Deserialize<ModelPayload>(yamlAsString);
+            Payload payload = deserializer.Deserialize<Payload>(yamlAsString);
             return payload;
         }
-        public static async Task<ModelPayload?> LoadPayload(string filepath)
+        public static async Task<Payload?> LoadPayload(string filepath)
         {
             //use primary s3 bucket to find the payload
             if (!Instance.HasInitialized)
@@ -168,7 +168,7 @@ namespace usace.wat.plugin
                 .fromSender("Plugin Services")
                 .build();
             Log(message);
-            ModelPayload payload = new ModelPayload();
+            Payload payload = new Payload();
             if (Instance.Config.aws_configs.Length == 0)
             {
                 Message message2 = Message.BuildMessage()
@@ -198,9 +198,9 @@ namespace usace.wat.plugin
         {
             switch (info.Store)
             {
-                case StoreTypes.S3:
+                case StoreType.S3:
                     return await DownloadBytesFromS3(info.Root, info.Path);
-                case StoreTypes.LOCAL:
+                case StoreType.LOCAL:
                     return null;
                 default:
                     return null;
@@ -210,10 +210,10 @@ namespace usace.wat.plugin
         {
             switch (info.Store)
             {
-                case StoreTypes.S3:
+                case StoreType.S3:
                     await UploadToS3Async(info.Root, info.Path, stream);
                     break;
-                case StoreTypes.LOCAL:
+                case StoreType.LOCAL:
                     try
                     {
                         writeInputStreamToDisk(stream, info.Root + Path.PathSeparator + info.Path);

@@ -1,4 +1,4 @@
-﻿namespace usace.wat.plugin
+﻿namespace usace.cc.plugin
 {
     public class Config
     {
