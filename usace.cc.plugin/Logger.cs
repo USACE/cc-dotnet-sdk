@@ -4,6 +4,11 @@ namespace usace.cc.plugin
 {
   internal class Logger
   {
+    public Logger(string sender, Error.Level level)
+    {
+      Sender = sender;
+      Level = level;
+    }
     public Logger()
     {
       Sender = "";

@@ -9,7 +9,7 @@
         public string aws_bucket { get; set; }
         public bool aws_mock { get; set; }
         public string aws_endpoint { get; set; }
-        public string aws_disable_ssl { get; set; }
+        public bool aws_disable_ssl { get; set; }
         public bool aws_force_path_style { get; set; }
     }
 }

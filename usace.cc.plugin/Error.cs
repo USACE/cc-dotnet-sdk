@@ -18,7 +18,7 @@ namespace usace.cc.plugin
       PANIC,
       DISABLED,
     }
-    public string ErrorMessage { get; set; }
+    public string? ErrorMessage { get; set; }
     public Level ErrorLevel { get; set; }
   }
 }

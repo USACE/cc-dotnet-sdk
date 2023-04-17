@@ -2,9 +2,10 @@
 {
     public class Payload
     {
-    private Dictionary<string, Object> Attributes { get; set; } 
-    private DataStore[] Stores { get; set; }
-    private DataSource[] Inputs { get; set; }
-    private DataSource[] Outputs { get; set; }
+    internal Dictionary<string, Object> Attributes { get; set; } 
+    internal DataStore[] Stores { get; set; }
+    internal DataSource[] Inputs { get; set; }
+    internal DataSource[] Outputs { get; set; }
+
   }
 }
