@@ -23,8 +23,6 @@ namespace usace.cc.plugin
       cs = new CcStoreS3();
       try
       {
-        Regex regex = new Regex("(?<=\\{).+?(?=\\})");
-           
         _payload = cs.GetPayload();
         int i = 0;
         foreach (DataStore store in _payload.Stores)
@@ -61,77 +59,12 @@ namespace usace.cc.plugin
       {
         for (int j = 0; j < sources[i].Paths.Length; j++)
         {
-          sources[i].Paths[j] = substituteDataSourcePath(sources[i].Paths[j]);
+          sources[i].Paths[j] = Utility.PathSubstitution(sources[i].Paths[j],_payload);
         }
       }
     }
-    //  private void substitutePathVariables()
-    //{
-    //  for (int i = 0; i < _payload.Inputs.Length; i++)
-    //  {
-    //    for (int j = 0; j < _payload.Inputs[i].Paths.Length; j++)
-    //    {
-    //      _payload.Inputs[i].Paths[j] = substituteDataSourcePath(_payload.Inputs[i].Paths[j]);
-    //    }
-    //  }
-    //  for (int i = 0; i < _payload.Outputs.Length; i++)
-    //  {
-    //    for (int j = 0; j < _payload.Outputs[i].Paths.Length; j++)
-    //    {
-    //      _payload.Outputs[i].Paths[j] = substituteDataSourcePath(_payload.Outputs[i].Paths[j]);
-    //    }
-    //  }
-    //}
 
-    private String substituteDataSourcePath(String path)
-    {
-      // Matcher m = p.matcher(path);
-      var m = regex.Match(path);
-      while (m.Success)
-      {
-        String result = m.group();
-        String[] parts = result.Split("::", 0);
-        String prefix = parts[0];
-        switch (prefix)
-        {
-          case "ENV":
-            String val = Utility.GetEnv(parts[1]);
-            path = ReplaceFirst(path,"\\{" + result + "\\}", val);
-            m = p.matcher(path);
-            break;
-          case "ATTR":
-            String valattr = _payload.getAttributes().get(parts[1]).toString();
-            path = ReplaceFirst(path,("\\{" + result + "\\}", valattr);//?
-            m = p.matcher(path);
-            break;
-          default:
-            break;
-        }
-        m = m.NextMatch();
-
-      }
-      return path;
-    }
-    /// <summary>
-    /// https://stackoverflow.com/questions/8809354/replace-first-occurrence-of-pattern-in-a-string
-    /// </summary>
-    /// <param name="text"></param>
-    /// <param name="search"></param>
-    /// <param name="replace"></param>
-    /// <returns></returns>
-    private string ReplaceFirst(string text, string search, string replace)
-    {
-      int pos = text.IndexOf(search);
-      if (pos < 0)
-      {
-        return text;
-      }
-      return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
-    }
-    public Payload getPayload()
-    {
-      return _payload;
-    }
+   
     public FileDataStore getFileStore(String storeName)
     {
       return (FileDataStore)findDataStore(storeName).getSession();//check for nil?

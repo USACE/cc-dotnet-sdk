@@ -21,4 +21,8 @@
     <PackageReference Include="YamlDotNet" Version="12.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\usace.cc.plugin\usace.cc.plugin.csproj" />
+  </ItemGroup>
+
 </Project>
