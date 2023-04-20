@@ -83,20 +83,7 @@ namespace usace.cc.plugin
       throw new NotImplementedException();
     }
 
-    //https://stackoverflow.com/questions/34144494/how-can-i-get-the-bytes-of-a-getobjectresponse-from-s3
-    private static byte[] ReadStream(Stream responseStream)
-    {
-      byte[] buffer = new byte[256];
-      using (MemoryStream ms = new MemoryStream())
-      {
-        int read;
-        while ((read = responseStream.Read(buffer, 0, buffer.Length)) > 0)
-        {
-          ms.Write(buffer, 0, read);
-        }
-        return ms.ToArray();
-      }
-    }
+   
     public async Task<byte[]> ReadBytes(string objectName)
     {
       RegionEndpoint bucketRegion = RegionEndpoint.GetBySystemName(config.aws_region);
@@ -114,7 +101,7 @@ namespace usace.cc.plugin
         {
           using (Stream responseStream = response.ResponseStream)
           {
-            rval = ReadStream(responseStream);
+            rval = Utility.ReadBytes(responseStream);
           }
         }
       }

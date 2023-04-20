@@ -26,7 +26,7 @@ namespace usace.cc.plugin
     /// <param name="path"></param>
     /// <param name="payload"></param>
     /// <returns></returns>
-    public static string PathSubstitution(string path, Payload payload)
+    public static string PathSubstitution(string path, Dictionary<string, object> attributes)
     {
 
       Regex regex = new Regex("{(?<type>ENV|ATTR)::(?<var>[^{}]+)}");
@@ -50,7 +50,7 @@ namespace usace.cc.plugin
         else if (type == "ATTR")
         {
           object? obj;
-          if (payload.Attributes.TryGetValue(variableName, out obj))
+          if( attributes.TryGetValue(variableName, out obj))
           { 
             if( obj != null )
                rval = rval.Replace(m.Value, obj.ToString());
@@ -59,6 +59,21 @@ namespace usace.cc.plugin
       }
 
       return rval;
+    }
+
+    //https://stackoverflow.com/questions/34144494/how-can-i-get-the-bytes-of-a-getobjectresponse-from-s3
+    internal static byte[] ReadBytes(Stream stream)
+    {
+      byte[] buffer = new byte[256];
+      using (MemoryStream ms = new MemoryStream())
+      {
+        int read;
+        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+        {
+          ms.Write(buffer, 0, read);
+        }
+        return ms.ToArray();
+      }
     }
 
   }

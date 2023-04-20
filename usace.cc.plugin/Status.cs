@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace usace.cc.plugin
 {
-  internal class Status
+  public class Status
   {
-    internal enum StatusLevel
+    public enum StatusLevel
     {
       COMPUTING, //Status = "Computing"
       FAILED,    //Status = "Failed"

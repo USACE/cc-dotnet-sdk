@@ -15,11 +15,11 @@ namespace usace.cc.plugin.test
     [Fact]
     public void InputOutputSubstutions()
     {
-
+      Environment.SetEnvironmentVariable("CC_EVENT_NUMBER", "123", EnvironmentVariableTarget.Process);
       string s1 = "/runs/{ENV::CC_EVENT_NUMBER}/seedgenerator/seeds.json";
-      Payload p = new Payload();
-      var s2 = usace.cc.plugin.Utility.PathSubstitution(s1, p);
-     // Assert.Equal("/runs/123/seedgenerator/seeds.json", s2);// requires some setup
+      var attributes = new Dictionary<string, object>();
+      var s2 = usace.cc.plugin.Utility.PathSubstitution(s1, attributes);
+      Assert.Equal("/runs/123/seedgenerator/seeds.json", s2);// requires some setup
 
     }
 

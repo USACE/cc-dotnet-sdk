@@ -59,15 +59,15 @@ namespace usace.cc.plugin
       {
         for (int j = 0; j < sources[i].Paths.Length; j++)
         {
-          sources[i].Paths[j] = Utility.PathSubstitution(sources[i].Paths[j],_payload);
+          sources[i].Paths[j] = Utility.PathSubstitution(sources[i].Paths[j],_payload.Attributes);
         }
       }
     }
 
    
-    public FileDataStore getFileStore(String storeName)
+    public IFileDataStore getFileStore(String storeName)
     {
-      return (FileDataStore)findDataStore(storeName).getSession();//check for nil?
+      return (IFileDataStore)findDataStore(storeName);
     }
     public DataStore getStore(String storeName)
     {
@@ -83,51 +83,52 @@ namespace usace.cc.plugin
     }
     public DataSource[] getInputDataSources()
     {
-      return _payload.getInputs();
+      return _payload.Inputs;
     }
     public DataSource[] getOutputDataSources()
     {
-      return _payload.getOutputs();
+      return _payload.Outputs;
     }
     public byte[] getFile(DataSource ds, int path)
     {
-      FileDataStore store = getFileStore(ds.getStoreName());
-      InputStream reader = store.Get(ds.getPaths()[path]);
-      byte[] data;
+      IFileDataStore store = getFileStore(ds.StoreName);
+      Stream reader = store.Get(ds.Paths[path]);
+      byte[] data = new byte[0];
       try
       {
-        data = reader.readAllBytes();
+        data = Utility.ReadBytes(reader);
         return data;
       }
       catch (IOException e)
       {
-        e.printStackTrace();
+        Console.WriteLine(e.Message);
         return null;
       }
     }
-    public boolean putFile(byte[] data, DataSource ds, int path)
+    public bool Put(byte[] data, DataSource ds, int path)
     {
-      FileDataStore store = getFileStore(ds.getStoreName());
-      return store.Put(new ByteArrayInputStream(data), ds.getPaths()[path]);
+      var store = getFileStore(ds.StoreName);
+      var stream = new MemoryStream(data);
+      return store.Put(stream, ds.Paths[path]);
     }
-    public boolean fileWriter(InputStream inputstream, DataSource destDs, int destPath)
+    public bool Put(Stream inputstream, DataSource destDs, int destPath)
     {
-      FileDataStore store = getFileStore(destDs.getStoreName());
-      return store.Put(inputstream, destDs.getPaths()[destPath]);
+      var store = getFileStore(destDs.StoreName);
+      return store.Put(inputstream, destDs.Paths[destPath]);
     }
-    public InputStream fileReader(DataSource ds, int path)
+    public Stream Get(DataSource ds, int path)
     {
-      FileDataStore store = getFileStore(ds.getStoreName());
-      return store.Get(ds.getPaths()[path]);
+      var store = getFileStore(ds.StoreName);
+      return store.Get(ds.Paths[path]);
     }
-    public InputStream fileReaderByName(String dataSourceName, int path)
+    public Stream Get(String dataSourceName, int path)
     {
       DataSource ds = findDataSource(dataSourceName, getInputDataSources());
-      return fileReader(ds, path);
+      return Get(ds, path);
     }
-    public void setLogLevel(ErrorLevel level)
+    public void SetLogLevel(Error.Level level)
     {
-      _logger.setErrorLevel(level);
+      _logger.Level = level;
     }
     public void LogMessage(Message message)
     {
@@ -143,16 +144,18 @@ namespace usace.cc.plugin
     }
     public int EventNumber()
     {
-      //Object result = _payload.getAttributes().get(EnvironmentVariables.CC_EVENT_NUMBER);
-      String val = System.getenv(EnvironmentVariables.CC_EVENT_NUMBER);
-      int eventNumber = Integer.parseInt(val);
-      return eventNumber;
+      string val = Utility.GetEnv(EnvironmentVariables.CC_EVENT_NUMBER);
+      if(int.TryParse(val,out int eventNumber))
+      {
+        return eventNumber;
+      }
+      return -1;
     }
     private DataSource findDataSource(String name, DataSource[] dataSources)
     {
-      for (DataSource dataSource : dataSources)
+      foreach (DataSource dataSource in dataSources)
       {
-        if (dataSource.getName().equalsIgnoreCase(name))
+        if (dataSource.Name.Equals(name,StringComparison.OrdinalIgnoreCase ) )
         {
           return dataSource;
         }
@@ -161,9 +164,10 @@ namespace usace.cc.plugin
     }
     private DataStore findDataStore(String name)
     {
-      for (DataStore dataStore : _payload.getStores())
+
+      foreach (DataStore dataStore in _payload.Stores)
       {
-        if (dataStore.getName().equalsIgnoreCase(name))
+        if (name.Equals(dataStore.Name, StringComparison.OrdinalIgnoreCase))
         {
           return dataStore;
         }

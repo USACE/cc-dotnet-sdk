@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace usace.cc.plugin
 {
-  internal class Error
+  public class Error
   {
-    internal enum Level
+    public enum Level
     {
       DEBUG,
       INFO,
