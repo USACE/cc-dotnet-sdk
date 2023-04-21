@@ -22,7 +22,7 @@ namespace usace.cc.plugin
     }
     public void LogMessage(Message message)
     {
-      String line = Sender + ":" + TimeStamp() + "\n\t" + message.ToString() + "\n";
+      String line = Sender + ":" + TimeStamp() + "\n\t" + message.message + "\n";
       Write(line);
     }
 

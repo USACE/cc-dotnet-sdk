@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace usace.cc.plugin
 {
+  /// <summary>
+  /// Repository of DataSources
+  /// 
+  /// example:  S3 bucket
+  /// </summary>
   public class DataStore
   {
     public String Name { get; set; }

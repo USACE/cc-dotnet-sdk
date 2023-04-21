@@ -14,8 +14,13 @@ namespace usace.cc.plugin
       FAILED,    //Status = "Failed"
       SUCCEEDED, //Status = "Succeeded"
     }
-    internal int Progress { get; set; }
-    internal StatusLevel GetStatus { get; set; }
+    public Status(StatusLevel level, int progress)
+    {
+      Progress = progress;
+      GetStatus = level;
+    }
+    public int Progress { get; set; }
+    public StatusLevel GetStatus { get; set; }
   }
 
 }

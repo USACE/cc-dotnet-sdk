@@ -10,7 +10,8 @@ namespace usace.cc.plugin
   {
     internal Payload GetPayload()
     {
-      throw new NotImplementedException();
+      Console.WriteLine("GetPayload - not implemented");
+      return new Payload();
     }
   }
 }

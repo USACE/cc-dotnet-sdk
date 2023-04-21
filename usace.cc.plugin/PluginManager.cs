@@ -14,7 +14,7 @@ namespace usace.cc.plugin
   {
     Logger _logger;
     CcStoreS3 cs;
-    Payload _payload;
+    public Payload Payload { get; private set; }
     Regex regex;
     public PluginManager()
     {
@@ -23,15 +23,15 @@ namespace usace.cc.plugin
       cs = new CcStoreS3();
       try
       {
-        _payload = cs.GetPayload();
+        Payload = cs.GetPayload();
         int i = 0;
-        foreach (DataStore store in _payload.Stores)
+        foreach (DataStore store in Payload.Stores)
         {
           switch (store.StoreType)
           {
             case StoreType.S3:
               store.Session = new FileDataStoreS3(store);
-              _payload.Stores[i] = store;
+              Payload.Stores[i] = store;
               break;
             case StoreType.WS:
             case StoreType.RDBMS:
@@ -43,8 +43,8 @@ namespace usace.cc.plugin
           }
           i++;
         }
-        substitutePathVariables(_payload.Inputs);
-        substitutePathVariables(_payload.Outputs);
+        substitutePathVariables(Payload.Inputs);
+        substitutePathVariables(Payload.Outputs);
       }
       catch (Exception e)
       {
@@ -59,12 +59,11 @@ namespace usace.cc.plugin
       {
         for (int j = 0; j < sources[i].Paths.Length; j++)
         {
-          sources[i].Paths[j] = Utility.PathSubstitution(sources[i].Paths[j],_payload.Attributes);
+          sources[i].Paths[j] = Utility.PathSubstitution(sources[i].Paths[j],Payload.Attributes);
         }
       }
     }
 
-   
     public IFileDataStore getFileStore(String storeName)
     {
       return (IFileDataStore)findDataStore(storeName);
@@ -83,11 +82,11 @@ namespace usace.cc.plugin
     }
     public DataSource[] getInputDataSources()
     {
-      return _payload.Inputs;
+      return Payload.Inputs;
     }
     public DataSource[] getOutputDataSources()
     {
-      return _payload.Outputs;
+      return Payload.Outputs;
     }
     public byte[] getFile(DataSource ds, int path)
     {
@@ -105,26 +104,26 @@ namespace usace.cc.plugin
         return null;
       }
     }
-    public bool Put(byte[] data, DataSource ds, int path)
+    public bool PutFile(byte[] data, DataSource ds, int path)
     {
       var store = getFileStore(ds.StoreName);
       var stream = new MemoryStream(data);
       return store.Put(stream, ds.Paths[path]);
     }
-    public bool Put(Stream inputstream, DataSource destDs, int destPath)
+    public bool FileWriter(Stream inputstream, DataSource destDs, int destPath)
     {
       var store = getFileStore(destDs.StoreName);
       return store.Put(inputstream, destDs.Paths[destPath]);
     }
-    public Stream Get(DataSource ds, int path)
+    public Stream FileReader(DataSource ds, int path)
     {
       var store = getFileStore(ds.StoreName);
       return store.Get(ds.Paths[path]);
     }
-    public Stream Get(String dataSourceName, int path)
+    public Stream FileReaderByName(String dataSourceName, int path)
     {
       DataSource ds = findDataSource(dataSourceName, getInputDataSources());
-      return Get(ds, path);
+      return FileReader(ds, path);
     }
     public void SetLogLevel(Error.Level level)
     {
@@ -165,7 +164,7 @@ namespace usace.cc.plugin
     private DataStore findDataStore(String name)
     {
 
-      foreach (DataStore dataStore in _payload.Stores)
+      foreach (DataStore dataStore in Payload.Stores)
       {
         if (name.Equals(dataStore.Name, StringComparison.OrdinalIgnoreCase))
         {

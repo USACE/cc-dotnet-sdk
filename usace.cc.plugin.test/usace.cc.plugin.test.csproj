@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
 
     <IsPackable>false</IsPackable>
+
+    <StartupObject>usace.cc.plugin.test.HelloWorldPlugin</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
