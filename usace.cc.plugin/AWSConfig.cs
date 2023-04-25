@@ -1,15 +1,28 @@
 ﻿namespace usace.cc.plugin
 {
-    public class AWSConfig
+  public class AWSConfig
+  {
+    public string aws_config_name { get; set; }
+    public string aws_access_key_id { get; set; }
+    public string aws_secret_access_key_id { get; set; }
+    public string aws_region { get; set; }
+    public string aws_bucket { get; set; }
+    public bool aws_mock { get; set; }
+    public string aws_endpoint { get; set; }
+    public bool aws_disable_ssl { get; set; }
+    public bool aws_force_path_style { get; set; }
+
+    public AWSConfig(string envPrefix)
     {
-        public string aws_config_name { get; set; }
-        public string aws_access_key_id { get; set; }
-        public string aws_secret_access_key_id { get; set; }
-        public string aws_region { get; set; }
-        public string aws_bucket { get; set; }
-        public bool aws_mock { get; set; }
-        public string aws_endpoint { get; set; }
-        public bool aws_disable_ssl { get; set; }
-        public bool aws_force_path_style { get; set; }
+      aws_region = Utility.GetEnv(envPrefix + "_" + EnvironmentVariables.AWS_DEFAULT_REGION);
+      aws_secret_access_key_id = Utility.GetEnv(envPrefix + "_" + EnvironmentVariables.AWS_SECRET_ACCESS_KEY);
+      aws_region = Utility.GetEnv(envPrefix + "_" + EnvironmentVariables.AWS_DEFAULT_REGION);
+      aws_bucket = Utility.GetEnv(envPrefix + "_" + EnvironmentVariables.AWS_S3_BUCKET);
+      aws_mock = Boolean.Parse(Utility.GetEnv(envPrefix + "_" + "S3_MOCK"));
+      aws_endpoint = Utility.GetEnv(envPrefix + "_" + "S3_ENDPOINT");
+      aws_disable_ssl = Boolean.Parse(Utility.GetEnv(envPrefix + "_" + "S3_DISABLE_SSL"));
+      aws_force_path_style = Boolean.Parse(Utility.GetEnv(envPrefix + "_" + "S3_FORCE_PATH_STYLE")); 
+
     }
+  }
 }

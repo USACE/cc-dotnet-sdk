@@ -24,15 +24,8 @@ namespace usace.cc.plugin
 
     public FileDataStoreS3(DataStore ds)
     {
-      config = new AWSConfig();
-      config.aws_region = Utility.GetEnv(ds.DsProfile + "_" + EnvironmentVariables.AWS_DEFAULT_REGION);
-      config.aws_secret_access_key_id = Utility.GetEnv(ds.DsProfile + "_" + EnvironmentVariables.AWS_SECRET_ACCESS_KEY);
-      config.aws_region = Utility.GetEnv(ds.DsProfile + "_" + EnvironmentVariables.AWS_DEFAULT_REGION);
-      config.aws_bucket = Utility.GetEnv(ds.DsProfile + "_" + EnvironmentVariables.AWS_S3_BUCKET);
-      config.aws_mock = Boolean.Parse(Utility.GetEnv(ds.DsProfile + "_" + "S3_MOCK"));//convert to boolean;
-      config.aws_endpoint = Utility.GetEnv(ds.DsProfile + "_" + "S3_ENDPOINT");
-      config.aws_disable_ssl = Boolean.Parse(Utility.GetEnv(ds.DsProfile + "_" + "S3_DISABLE_SSL"));//convert to bool?
-      config.aws_force_path_style = Boolean.Parse(Utility.GetEnv(ds.DsProfile + "_" + "S3_FORCE_PATH_STYLE"));//convert to bool
+      var envPrefix = ds.DsProfile;
+      config = new AWSConfig(envPrefix);
       AddS3Bucket(config);
 
     }
