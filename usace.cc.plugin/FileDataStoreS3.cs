@@ -19,56 +19,37 @@ namespace usace.cc.plugin
     StoreType storeType;
     AmazonS3Client s3Client;
     AWSConfig config;
-    //private static String S3ROOT = "root";
-
+    private static String S3ROOT = "root";
+    string prefix = "";
 
     public FileDataStoreS3(DataStore ds)
     {
-      var envPrefix = ds.DsProfile;
-      config = new AWSConfig(envPrefix);
-      AddS3Bucket(config);
-
-    }
-
-   
-
-      private async void AddS3Bucket(AWSConfig config) { 
-
-      string bucketName = config.aws_bucket;
-      RegionEndpoint bucketRegion = RegionEndpoint.GetBySystemName(config.aws_region);
-      s3Client = new AmazonS3Client(bucketRegion);
-
-      if (config.aws_mock)
+      if( !ds.Parameters.TryGetValue(S3ROOT, out prefix))
       {
-        return;
-        //AWSCredentials aWSCredentials = new BasicAWSCredentials(acfg.aws_access_key_id, acfg.aws_secret_access_key_id);
-        //ClientConfig config = new ClientConfig();
-        //config.SignerOverride();
-        
-        //s3Client = AmazonS3C
-       }
-
-      if (!await(AmazonS3Util.DoesS3BucketExistV2Async(s3Client, bucketName)))
-      {
-        var putBucketRequest = new PutBucketRequest
-        {
-          BucketName = bucketName,
-          UseClientRegion = true
-        };
-        try
-        {
-          PutBucketResponse putBucketResponse = await s3Client.PutBucketAsync(putBucketRequest);
-        }
-        catch (AmazonS3Exception e)
-        {
-          Console.WriteLine("Error encountered on server. Message:'{0}' when writing an object", e.Message);
-        }
-
+        throw new Exception("The DataStore.Parameters did not contain the key [" + S3ROOT + "]");
       }
+      prefix = prefix.TrimStart('/');
+      config = new AWSConfig(ds.DsProfile);
+      s3Client = CloudUtility.GetS3Client(ds.DsProfile);
     }
+
     public bool Copy(IFileDataStore destStore, string srcPath, string destPath)
     {
       throw new NotImplementedException();
+
+      //byte[] data;
+      //try
+      //{
+      //  data = CloudUtility.GetObjectBytes(srcPath);
+
+      //  ByteArrayInputStream bias = new ByteArrayInputStream(data);
+      //  return destStore.Put(bias, destPath);
+      //}
+      //catch (RemoteException e)
+      //{
+      //  e.printStackTrace();
+      //  return false;
+      //}
     }
 
     public bool Delete(string path)
@@ -76,7 +57,6 @@ namespace usace.cc.plugin
       throw new NotImplementedException();
     }
 
-   
     public async Task<byte[]> ReadBytes(string objectName)
     {
       RegionEndpoint bucketRegion = RegionEndpoint.GetBySystemName(config.aws_region);

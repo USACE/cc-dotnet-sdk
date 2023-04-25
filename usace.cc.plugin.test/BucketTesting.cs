@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Amazon;
+using Amazon.S3;
+using Amazon.S3.Model;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using Xunit;
 
 namespace usace.cc.plugin.test
@@ -53,6 +53,19 @@ namespace usace.cc.plugin.test
     {
       var payload = CreateTestPayload("FFRD");
       FileDataStoreS3 s3 = new FileDataStoreS3(payload.Stores[0]);
+      //Stream s;
+     // s3.
+
+    }
+
+    [Fact]
+    public async void CreateBucket()
+    {
+      var s3Client = CloudUtility.GetS3Client("KARL");
+      using (s3Client)
+      {
+        await CloudUtility.CreateBucketIfNotExists(s3Client, "test7");
+      }
 
 
     }
