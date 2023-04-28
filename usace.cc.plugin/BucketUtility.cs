@@ -64,7 +64,7 @@ namespace usace.cc.plugin
         var rval = await s3Client.DeleteObjectAsync(request);
         return true;
       }
-      catch(AmazonS3Exception e)
+      catch (AmazonS3Exception e)
       {
         Console.WriteLine(e.Message);
         return false;
@@ -111,10 +111,19 @@ namespace usace.cc.plugin
     public static async Task<bool> CreateObject(AmazonS3Client s3Client, string bucketName,
                                           string objectKey, byte[] data)
     {
-     return await CreateObject(s3Client, bucketName, objectKey, new MemoryStream(data));
+      return await CreateObject(s3Client, bucketName, objectKey, new MemoryStream(data));
     }
 
-    public static async Task<Stream> ReadObjectAsStream(AmazonS3Client s3Client, string key, string bucketName)
+    public static async Task<Byte[]> ReadObjectAsBytes(AmazonS3Client s3Client, string bucketName, string key)
+    {
+      var stream = await ReadObjectAsStream(s3Client, bucketName, key);
+      using (var memoryStream = new MemoryStream())
+      {
+        stream.CopyTo(memoryStream);
+        return memoryStream.ToArray();
+      }
+    }
+    public static async Task<Stream> ReadObjectAsStream(AmazonS3Client s3Client, string bucketName, string key)
     {
       var getObjectRequest = new GetObjectRequest
       {
@@ -203,37 +212,5 @@ namespace usace.cc.plugin
 
 
 
-  //private static async Task<byte[]> ReadObjectAsBytes(AWSConfig config, string objectName)
-  //{
-  //  RegionEndpoint bucketRegion = RegionEndpoint.GetBySystemName(config.aws_region);
-  //  IAmazonS3 client = new AmazonS3Client(bucketRegion);
-  //  var rval = new byte[0];
-  //  try
-  //  {
-  //    GetObjectRequest request = new GetObjectRequest
-  //    {
-  //      BucketName = config.aws_bucket,
-  //      Key = objectName
-  //    };
-  //    var size = request.ByteRange.End - request.ByteRange.Start;
-  //    using (GetObjectResponse response = await client.GetObjectAsync(request))
-  //    {
-  //      using (Stream responseStream = response.ResponseStream)
-  //      {
-  //        rval = Utility.ReadBytes(responseStream);
-  //      }
-  //    }
-  //  }
-  //  catch (AmazonS3Exception e)
-  //  {
-  //    // If bucket or object does not exist
-  //    Console.WriteLine("Error encountered ***. Message:'{0}' when reading object", e.Message);
-  //  }
-  //  catch (Exception e)
-  //  {
-  //    Console.WriteLine("Unknown encountered on server. Message:'{0}' when reading object", e.Message);
-  //  }
-  //  return rval;
-  //}
-}
+  }
 }
