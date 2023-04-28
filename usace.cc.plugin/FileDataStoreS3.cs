@@ -30,7 +30,7 @@ namespace usace.cc.plugin
       }
       prefix = prefix.TrimStart('/');
       config = new AWSConfig(ds.DsProfile);
-      s3Client = CloudUtility.GetS3Client(ds.DsProfile);
+      s3Client = BucketUtility.GetS3Client(ds.DsProfile);
     }
 
     public bool Copy(IFileDataStore destStore, string srcPath, string destPath)
@@ -54,45 +54,30 @@ namespace usace.cc.plugin
 
     public bool Delete(string path)
     {
-      throw new NotImplementedException();
+      bool rval = Task.Run(() =>
+          BucketUtility.DeleteObject(s3Client, config.aws_bucket, path)).GetAwaiter().GetResult();
+      return rval;
+    }
+    public async Task<bool> DeleteAsync(string path)
+    {
+      var rval = await BucketUtility.DeleteObject(s3Client, config.aws_bucket, path);
+      return rval;
     }
 
-    public async Task<byte[]> ReadBytes(string objectName)
+    
+    public async Task<bool> PutAsync(Stream data, string path)
     {
-      RegionEndpoint bucketRegion = RegionEndpoint.GetBySystemName(config.aws_region);
-      IAmazonS3 client = new AmazonS3Client(bucketRegion);
-      var rval = new byte[0];
-      try
-      {
-        GetObjectRequest request = new GetObjectRequest
-        {
-          BucketName = config.aws_bucket,
-          Key = objectName
-        };
-        var size = request.ByteRange.End - request.ByteRange.Start;
-        using (GetObjectResponse response = await client.GetObjectAsync(request))
-        {
-          using (Stream responseStream = response.ResponseStream)
-          {
-            rval = Utility.ReadBytes(responseStream);
-          }
-        }
-      }
-      catch (AmazonS3Exception e)
-      {
-        // If bucket or object does not exist
-        Console.WriteLine("Error encountered ***. Message:'{0}' when reading object", e.Message);
-      }
-      catch (Exception e)
-      {
-        Console.WriteLine("Unknown encountered on server. Message:'{0}' when reading object", e.Message);
-      }
-      return rval;
+      var key = Path.Combine(prefix, path);
+      return await BucketUtility.CreateObject(s3Client, config.aws_bucket,key, data);
     }
     public bool Put(Stream data, string path)
     {
-      throw new NotImplementedException();
+      bool rval = Task.Run(() =>
+          PutAsync(data, path)).GetAwaiter().GetResult();
+      return rval;
+
     }
+
 
     Stream IFileDataStore.Get(string path)
     {

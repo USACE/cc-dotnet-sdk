@@ -11,7 +11,7 @@ namespace usace.cc.plugin
   {
     internal static string GetEnv(string name)
     {
-      string? x = Environment.GetEnvironmentVariable(name);
+      string x = Environment.GetEnvironmentVariable(name);
 
       if (x == null)
         return "";
