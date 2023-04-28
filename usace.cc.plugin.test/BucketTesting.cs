@@ -67,8 +67,8 @@ namespace usace.cc.plugin.test
       {
         await BucketUtility.CreateBucketIfNotExists(s3Client, "test7");
       }
-
     }
+
     private static string CreateTestData()
     {
       StringBuilder sb = new StringBuilder();
@@ -96,6 +96,12 @@ namespace usace.cc.plugin.test
 
         var txt2 = await BucketUtility.ReadObjectAsText(s3Client, bucketName, key);
         Assert.True(string.Equals(txt, txt2),"content different");
+
+        var locaFileName = Path.GetTempFileName();
+        System.Console.WriteLine("saving to local file: "+locaFileName);
+
+        await BucketUtility.SaveObjectToLocalFile(s3Client, bucketName, key, locaFileName);
+
 
         var deleted = await BucketUtility.DeleteObject(s3Client, bucketName, key);
         Assert.True(deleted, "object was not deleted: " + key);

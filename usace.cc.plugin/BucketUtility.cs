@@ -71,6 +71,12 @@ namespace usace.cc.plugin
       }
     }
 
+    internal static async Task<bool> CreateObjectFromLocalFile(AmazonS3Client s3Client, string bucketName, string objectKey,string fileName)
+    {
+      var bytes = File.ReadAllBytes(fileName);
+      return await CreateObject(s3Client,bucketName,objectKey,bytes);
+    }
+
     public static async Task<bool> CreateObject(AmazonS3Client s3Client, string bucketName,
                                       string objectKey, string data)
     {
@@ -123,6 +129,23 @@ namespace usace.cc.plugin
         return memoryStream.ToArray();
       }
     }
+
+    public static async Task<bool> SaveObjectToLocalFile(AmazonS3Client s3Client, string bucketName, string key,string localFileName)
+    {
+      try
+      {
+        var bytes = await ReadObjectAsBytes(s3Client, bucketName, key);
+        File.WriteAllBytes(localFileName, bytes);
+        return true;
+      }
+      catch(Exception e)
+      {
+        Console.WriteLine(e.Message);
+      }
+      return false;
+
+    }
+
     public static async Task<Stream> ReadObjectAsStream(AmazonS3Client s3Client, string bucketName, string key)
     {
       var getObjectRequest = new GetObjectRequest
