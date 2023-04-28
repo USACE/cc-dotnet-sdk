@@ -36,11 +36,7 @@ namespace usace.cc.plugin
     {
       return Path.Combine(input.DestRootPath, input.FileName + "." + input.FileExtension);
     }
-    public byte[] GetObject(GetObjectInput input)
-    {
-      throw new NotImplementedException();
-    }
-
+   
     public bool HandlesDataStoreType(StoreType datastoretype)
     {
       return datastoretype == StoreType.S3;
@@ -86,6 +82,12 @@ namespace usace.cc.plugin
 
       return rval;
     }
+
+    public byte[] GetObject(GetObjectInput input)
+    {
+      throw new NotImplementedException();
+    }
+
 
     public string RootPath()
     {

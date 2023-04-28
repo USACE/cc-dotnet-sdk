@@ -134,6 +134,8 @@ namespace usace.cc.plugin
     {
       try
       {
+        var dir = Path.GetDirectoryName(localFileName);
+        Directory.CreateDirectory(dir);
         var bytes = await ReadObjectAsBytes(s3Client, bucketName, key);
         File.WriteAllBytes(localFileName, bytes);
         return true;

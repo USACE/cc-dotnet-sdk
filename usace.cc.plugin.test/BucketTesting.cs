@@ -97,7 +97,11 @@ namespace usace.cc.plugin.test
         var txt2 = await BucketUtility.ReadObjectAsText(s3Client, bucketName, key);
         Assert.True(string.Equals(txt, txt2),"content different");
 
-        var locaFileName = Path.GetTempFileName();
+
+        var dir = Path.Combine(Path.GetTempPath(), "karl-sub-dir-test");
+        var locaFileName = Path.Combine(dir, "karl.txt");
+        if( File.Exists(locaFileName))
+           File.Delete(locaFileName);
         System.Console.WriteLine("saving to local file: "+locaFileName);
 
         await BucketUtility.SaveObjectToLocalFile(s3Client, bucketName, key, locaFileName);
