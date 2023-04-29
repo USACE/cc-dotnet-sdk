@@ -7,7 +7,14 @@
     public string aws_secret_access_key_id { get; set; }
     public string aws_region { get; set; }
     public string aws_bucket { get; set; }
+    /// <summary>
+    /// aws_mock is set to True when using minio
+    /// </summary>
     public bool aws_mock { get; set; }
+    /// <summary>
+    /// aws_endpoint is used with minio
+    /// for example: http://192.168.206.129:9000
+    /// </summary>
     public string aws_endpoint { get; set; }
     private bool aws_disable_ssl { get; set; }
     private bool aws_force_path_style { get; set; }

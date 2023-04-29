@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace usace.cc.plugin
 {
   /// <summary>
-  /// CCStore is a special Store used by plugins to pull payloads.
+  /// CCStore3 is a special Store used by plugins to pull payloads.
   /// 
   /// 
   /// </summary>
