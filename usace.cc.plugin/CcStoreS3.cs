@@ -1,15 +1,7 @@
-﻿using Amazon.S3;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace usace.cc.plugin
+﻿namespace usace.cc.plugin
 {
   /// <summary>
   /// CCStore3 is a special Store used by plugins to pull payloads.
-  /// 
   /// 
   /// </summary>
   internal class CcStoreS3 : CcStore
@@ -19,7 +11,6 @@ namespace usace.cc.plugin
     string root;
     public CcStoreS3()
     {
-     
       var profileName = Utility.GetEnv(EnvironmentVariables.CC_PROFILE);
       bucket = new AwsBucket(profileName);
       manifestId = Utility.GetEnv(EnvironmentVariables.CC_MANIFEST_ID);
@@ -88,7 +79,6 @@ namespace usace.cc.plugin
         bucket.ReadObjectAsBytes(path)).GetAwaiter().GetResult();
       return rval;
     }
-
 
     public string RootPath()
     {
