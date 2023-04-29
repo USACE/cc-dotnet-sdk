@@ -14,16 +14,14 @@ namespace usace.cc.plugin
   /// </summary>
   internal class CcStoreS3 : CcStore
   {
-
-    AWSConfig config;
-    AmazonS3Client awsS3;
+    AwsBucket bucket;
     string manifestId;
     string root;
     public CcStoreS3()
     {
+     
       var profileName = Utility.GetEnv(EnvironmentVariables.CC_PROFILE);
-      config = new AWSConfig(profileName);
-      awsS3 = BucketUtility.GetS3Client(profileName);
+      bucket = new AwsBucket(profileName);
       manifestId = Utility.GetEnv(EnvironmentVariables.CC_MANIFEST_ID);
       root = Utility.GetEnv(EnvironmentVariables.CC_ROOT);
     }
@@ -55,13 +53,13 @@ namespace usace.cc.plugin
       if (input.ObjectState == ObjectState.LocalDisk)
       {
         var rval = Task.Run(() =>
-          BucketUtility.CreateObjectFromLocalFile(awsS3, config.aws_bucket, path, path)).GetAwaiter().GetResult();
+          bucket.CreateObjectFromLocalFile(path, path)).GetAwaiter().GetResult();
         return rval;
       }
       if (input.ObjectState == ObjectState.Memory)
       {
         var rval = Task.Run(() =>
-          BucketUtility.CreateObject(awsS3, config.aws_bucket, path, input.Data)).GetAwaiter().GetResult();
+          bucket.CreateObject(path, input.Data)).GetAwaiter().GetResult();
         return rval;
       }
 
@@ -78,7 +76,7 @@ namespace usace.cc.plugin
       var localPath = LocalPath(input);
 
       var rval = Task.Run(() =>
-          BucketUtility.SaveObjectToLocalFile(awsS3, config.aws_bucket, path,localPath)).GetAwaiter().GetResult();
+          bucket.SaveObjectToLocalFile(path,localPath)).GetAwaiter().GetResult();
 
       return rval;
     }
@@ -86,8 +84,8 @@ namespace usace.cc.plugin
     public byte[] GetObject(GetObjectInput input)
     {
       var path = S3Path(input.FileName, input.FileExtension);
-      var rval = Task.Run(() => 
-        BucketUtility.ReadObjectAsBytes(awsS3, config.aws_bucket,path)).GetAwaiter().GetResult();
+      var rval = Task.Run(() =>
+        bucket.ReadObjectAsBytes(path)).GetAwaiter().GetResult();
       return rval;
     }
 
@@ -101,22 +99,16 @@ namespace usace.cc.plugin
     /// Reads json payload from S3
     /// </summary>
     /// <returns></returns>
-    internal Payload GetPayload()
+    public Payload GetPayload()
     {
       var key = Path.Combine(root,manifestId,Constants.PayloadFileName);
 
-      var bytes = Task.Run(() =>
-        BucketUtility.ReadObjectAsBytes(awsS3, config.aws_bucket, key)).GetAwaiter().GetResult();
+      var json = Task.Run(() =>
+        bucket.ReadObjectAsText(key)).GetAwaiter().GetResult();
 
-
-
-      Console.WriteLine("GetPayload - not implemented");
-      return new Payload();
+      Payload p = Payload.FromJson(json);
+      return p;
     }
 
-    Payload CcStore.GetPayload()
-    {
-      throw new NotImplementedException();
-    }
   }
 }

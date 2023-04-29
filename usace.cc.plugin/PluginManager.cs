@@ -15,7 +15,6 @@ namespace usace.cc.plugin
     Logger _logger;
     CcStoreS3 cs;
     public Payload Payload { get; private set; }
-    Regex regex;
     public PluginManager()
     {
       string sender = Utility.GetEnv(EnvironmentVariables.CC_PLUGIN_DEFINITION);

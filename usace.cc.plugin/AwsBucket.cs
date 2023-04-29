@@ -2,24 +2,46 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace usace.cc.plugin
 {
-  public class BucketUtility
+  /// <summary>
+  /// Manage connection and functionality to a S3 bucket
+  /// </summary>
+  public class AwsBucket:IDisposable
   {
-    public static AmazonS3Client GetS3Client(string profileName)
+    AmazonS3Client s3Client;
+    string bucketName;
+
+    public AwsBucket(string profileName)
     {
       AWSConfig cfg = new AWSConfig(profileName);
-
+      s3Client = GetS3Client(cfg);
+      bucketName = cfg.aws_bucket;
+    }
+    public AwsBucket(string profileName, string bucketName)
+    {
+      AWSConfig cfg = new AWSConfig(profileName);
+      s3Client = GetS3Client(cfg);
+      this.bucketName = bucketName;
+    }
+    private static AmazonS3Client GetS3Client(AWSConfig cfg)
+    {
       var awsConfig = new AmazonS3Config()
       {
-        ServiceURL = cfg.aws_endpoint,
         ForcePathStyle = true,
       };
 
-      if (!cfg.aws_mock)
+      if(cfg.aws_mock)
       {
+        awsConfig.ServiceURL = cfg.aws_endpoint;
+      }
+      else {
         awsConfig.RegionEndpoint = RegionEndpoint.GetBySystemName(cfg.aws_region);
       }
 
@@ -29,7 +51,7 @@ namespace usace.cc.plugin
 
     }
 
-    public static async Task<bool> CreateBucketIfNotExists(AmazonS3Client s3Client, string bucketName)
+    public async Task<bool> CreateBucketIfNotExists()
     {
       var request = new PutBucketRequest
       {
@@ -52,7 +74,7 @@ namespace usace.cc.plugin
       return false;
     }
 
-    public static async Task<bool> DeleteObject(AmazonS3Client s3Client, string bucketName, string key)
+    public async Task<bool> DeleteObject(string key)
     {
       DeleteObjectRequest request = new DeleteObjectRequest
       {
@@ -71,24 +93,22 @@ namespace usace.cc.plugin
       }
     }
 
-    internal static async Task<bool> CreateObjectFromLocalFile(AmazonS3Client s3Client, string bucketName, string objectKey,string fileName)
+    internal async Task<bool> CreateObjectFromLocalFile(string objectKey, string fileName)
     {
       var bytes = File.ReadAllBytes(fileName);
-      return await CreateObject(s3Client,bucketName,objectKey,bytes);
+      return await CreateObject(objectKey, bytes);
     }
 
-    public static async Task<bool> CreateObject(AmazonS3Client s3Client, string bucketName,
-                                      string objectKey, string data)
+    public async Task<bool> CreateObject(string objectKey, string data)
     {
       var buff = Encoding.UTF8.GetBytes(data);
       MemoryStream stream = new MemoryStream(buff);
-      return await CreateObject(s3Client, bucketName, objectKey, stream);
+      return await CreateObject(objectKey, stream);
     }
 
 
 
-    public static async Task<bool> CreateObject(AmazonS3Client s3Client, string bucketName,
-                                       string objectKey, Stream stream)
+    public async Task<bool> CreateObject(string objectKey, Stream stream)
     {
       try
       {
@@ -114,15 +134,14 @@ namespace usace.cc.plugin
       }
       return true;
     }
-    public static async Task<bool> CreateObject(AmazonS3Client s3Client, string bucketName,
-                                          string objectKey, byte[] data)
+    public async Task<bool> CreateObject(string objectKey, byte[] data)
     {
-      return await CreateObject(s3Client, bucketName, objectKey, new MemoryStream(data));
+      return await CreateObject(objectKey, new MemoryStream(data));
     }
 
-    public static async Task<Byte[]> ReadObjectAsBytes(AmazonS3Client s3Client, string bucketName, string key)
+    public async Task<Byte[]> ReadObjectAsBytes(string key)
     {
-      var stream = await ReadObjectAsStream(s3Client, bucketName, key);
+      var stream = await ReadObjectAsStream(key);
       using (var memoryStream = new MemoryStream())
       {
         stream.CopyTo(memoryStream);
@@ -130,17 +149,17 @@ namespace usace.cc.plugin
       }
     }
 
-    public static async Task<bool> SaveObjectToLocalFile(AmazonS3Client s3Client, string bucketName, string key,string localFileName)
+    public async Task<bool> SaveObjectToLocalFile(string key, string localFileName)
     {
       try
       {
         var dir = Path.GetDirectoryName(localFileName);
         Directory.CreateDirectory(dir);
-        var bytes = await ReadObjectAsBytes(s3Client, bucketName, key);
+        var bytes = await ReadObjectAsBytes(key);
         File.WriteAllBytes(localFileName, bytes);
         return true;
       }
-      catch(Exception e)
+      catch (Exception e)
       {
         Console.WriteLine(e.Message);
       }
@@ -148,7 +167,7 @@ namespace usace.cc.plugin
 
     }
 
-    public static async Task<Stream> ReadObjectAsStream(AmazonS3Client s3Client, string bucketName, string key)
+    public async Task<Stream> ReadObjectAsStream(string key)
     {
       var getObjectRequest = new GetObjectRequest
       {
@@ -160,7 +179,7 @@ namespace usace.cc.plugin
 
       return getObjectResponse.ResponseStream;
     }
-    public static async Task<string> ReadObjectAsText(AmazonS3Client s3Client, string bucketName, string key)
+    public async Task<string> ReadObjectAsText(string key)
     {
       var getObjectRequest = new GetObjectRequest
       {
@@ -179,7 +198,7 @@ namespace usace.cc.plugin
 
     }
 
-    public async static Task<bool> ObjectExists(AmazonS3Client client, string bucketName, string key)
+    public async Task<bool> ObjectExists(string key)
     {
       try
       {
@@ -189,7 +208,7 @@ namespace usace.cc.plugin
           Key = key
         };
 
-        await client.GetObjectMetadataAsync(request);
+        await s3Client.GetObjectMetadataAsync(request);
 
         return true; // Object exists
       }
@@ -207,7 +226,7 @@ namespace usace.cc.plugin
     }
 
 
-    public static async Task<bool> BucketExists(AmazonS3Client s3Client, string bucketName)
+    public async Task<bool> BucketExists()
     {
       try
       {
@@ -221,7 +240,7 @@ namespace usace.cc.plugin
     }
 
 
-    public static async Task<bool> DeleteBucket(AmazonS3Client s3Client, string bucketName)
+    public async Task<bool> DeleteBucket()
     {
       try
       {
@@ -235,7 +254,9 @@ namespace usace.cc.plugin
       }
     }
 
-
-
+    public void Dispose()
+    {
+     
+    }
   }
 }

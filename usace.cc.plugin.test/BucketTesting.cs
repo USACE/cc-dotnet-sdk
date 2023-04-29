@@ -14,10 +14,10 @@ namespace usace.cc.plugin.test
     [Fact]
     public async void CreateBucket()
     {
-      var s3Client = BucketUtility.GetS3Client("KARL");
-      using (s3Client)
+      var bucket = new AwsBucket("KARL","test-bucket-983556");
+      using (bucket)
       {
-        await BucketUtility.CreateBucketIfNotExists(s3Client, "test7");
+        await bucket.CreateBucketIfNotExists();
       }
     }
 
@@ -33,20 +33,20 @@ namespace usace.cc.plugin.test
     [Fact]
     public async void ObjectLifeCycle()
     {
-      var s3Client = BucketUtility.GetS3Client("KARL");
-      var bucketName = "thyroid";
-      await BucketUtility.CreateBucketIfNotExists(s3Client, bucketName);
-      using (s3Client)
+      AwsBucket bucket = new AwsBucket("KARL", "thyroid");
+
+      await bucket.CreateBucketIfNotExists();
+      using (bucket)
       {
         var txt = CreateTestData();
         string key = "test-object.txt";
-        var created =await BucketUtility.CreateObject(s3Client, bucketName,key, txt);
+        var created =await bucket.CreateObject(key, txt);
         Assert.True(created);
 
-        var objectExists = await BucketUtility.ObjectExists(s3Client, bucketName, key);
+        var objectExists = await bucket.ObjectExists(key);
         Assert.True(objectExists, "object does not exist");
 
-        var txt2 = await BucketUtility.ReadObjectAsText(s3Client, bucketName, key);
+        var txt2 = await bucket.ReadObjectAsText(key);
         Assert.True(string.Equals(txt, txt2),"content different");
 
 
@@ -56,18 +56,18 @@ namespace usace.cc.plugin.test
            File.Delete(locaFileName);
         System.Console.WriteLine("saving to local file: "+locaFileName);
 
-        await BucketUtility.SaveObjectToLocalFile(s3Client, bucketName, key, locaFileName);
+        await bucket.SaveObjectToLocalFile(key, locaFileName);
 
         Assert.True(File.Exists(locaFileName));
 
-        var deleted = await BucketUtility.DeleteObject(s3Client, bucketName, key);
+        var deleted = await bucket.DeleteObject(key);
         Assert.True(deleted, "object was not deleted: " + key);
-        bool exists = await BucketUtility.ObjectExists(s3Client, bucketName, key); 
+        bool exists = await bucket.ObjectExists(key); 
         Assert.False(exists," object not deleted?");
 
-        await BucketUtility.DeleteBucket(s3Client, bucketName);
+        await bucket.DeleteBucket();
 
-        exists = await BucketUtility.BucketExists(s3Client, bucketName);
+        exists = await bucket.BucketExists();
       }
 
     }

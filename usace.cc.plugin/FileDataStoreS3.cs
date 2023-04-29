@@ -16,8 +16,7 @@ namespace usace.cc.plugin
   /// </summary>
   public class FileDataStoreS3 : IFileDataStore
   {
-    AmazonS3Client s3Client;
-    AWSConfig config;
+    AwsBucket bucket;
     private static String S3ROOT = "root";
     string prefix = "";
 
@@ -34,8 +33,7 @@ namespace usace.cc.plugin
         throw new Exception("The DataStore Parameters did not contain the key [" + S3ROOT + "]");
       }
       prefix = prefix.TrimStart('/');
-      config = new AWSConfig(ds.DsProfile);
-      s3Client = BucketUtility.GetS3Client(ds.DsProfile);
+      bucket = new AwsBucket(ds.DsProfile);
     }
 
     public bool Copy(IFileDataStore destStore, string srcPath, string destPath)
@@ -57,39 +55,38 @@ namespace usace.cc.plugin
     {
       
       var rval = Task.Run(() =>
-         BucketUtility.ReadObjectAsBytes(s3Client, config.aws_bucket, 
-                    GetObjectKey(srcPath))).GetAwaiter().GetResult();
+         bucket.ReadObjectAsBytes(GetObjectKey(srcPath))).GetAwaiter().GetResult();
       return rval;
     }
 
     public bool Delete(string path)
     {
       bool rval = Task.Run(() =>
-          BucketUtility.DeleteObject(s3Client, config.aws_bucket, GetObjectKey(path))).GetAwaiter().GetResult();
+          bucket.DeleteObject(GetObjectKey(path))).GetAwaiter().GetResult();
       return rval;
     }
     public async Task<bool> DeleteAsync(string path)
     {
-      var rval = await BucketUtility.DeleteObject(s3Client, config.aws_bucket, GetObjectKey(path));
+      var rval = await bucket.DeleteObject(GetObjectKey(path));
       return rval;
     }
 
     
     public async Task<bool> PutAsync(Stream data, string path)
     {
-      return await BucketUtility.CreateObject(s3Client, config.aws_bucket,GetObjectKey(path), data);
+      return await bucket.CreateObject(GetObjectKey(path), data);
     }
     public bool Put(Stream data, string path)
     {
       bool rval = Task.Run(() =>
-          BucketUtility.CreateObject(s3Client, config.aws_bucket, GetObjectKey(path), data)).GetAwaiter().GetResult();
+          bucket.CreateObject(GetObjectKey(path), data)).GetAwaiter().GetResult();
       return rval;
     }
 
     public Stream Get(string path)
     {
       var rval = Task.Run(() =>
-      BucketUtility.ReadObjectAsStream(s3Client, config.aws_bucket, GetObjectKey(path))).GetAwaiter().GetResult();
+      bucket.ReadObjectAsStream(GetObjectKey(path))).GetAwaiter().GetResult();
       return rval;
     }
   }

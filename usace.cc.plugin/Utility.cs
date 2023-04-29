@@ -49,7 +49,7 @@ namespace usace.cc.plugin
         }
         else if (type == "ATTR")
         {
-          object? obj;
+          object obj;
           if( attributes.TryGetValue(variableName, out obj))
           { 
             if( obj != null )
