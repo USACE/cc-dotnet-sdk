@@ -85,7 +85,10 @@ namespace usace.cc.plugin
 
     public byte[] GetObject(GetObjectInput input)
     {
-      throw new NotImplementedException();
+      var path = S3Path(input.FileName, input.FileExtension);
+      var rval = Task.Run(() => 
+        BucketUtility.ReadObjectAsBytes(awsS3, config.aws_bucket,path)).GetAwaiter().GetResult();
+      return rval;
     }
 
 
@@ -94,8 +97,19 @@ namespace usace.cc.plugin
       throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Reads json payload from S3
+    /// </summary>
+    /// <returns></returns>
     internal Payload GetPayload()
     {
+      var key = Path.Combine(root,manifestId,Constants.PayloadFileName);
+
+      var bytes = Task.Run(() =>
+        BucketUtility.ReadObjectAsBytes(awsS3, config.aws_bucket, key)).GetAwaiter().GetResult();
+
+
+
       Console.WriteLine("GetPayload - not implemented");
       return new Payload();
     }
