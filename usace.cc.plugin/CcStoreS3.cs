@@ -92,7 +92,7 @@ namespace usace.cc.plugin
 
     public string RootPath()
     {
-      throw new NotImplementedException();
+      return bucket.Name;
     }
 
     /// <summary>

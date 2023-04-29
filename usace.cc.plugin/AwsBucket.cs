@@ -16,19 +16,20 @@ namespace usace.cc.plugin
   public class AwsBucket:IDisposable
   {
     AmazonS3Client s3Client;
-    string bucketName;
+
+    public string Name { get; internal set; }
 
     public AwsBucket(string profileName)
     {
       AWSConfig cfg = new AWSConfig(profileName);
       s3Client = GetS3Client(cfg);
-      bucketName = cfg.aws_bucket;
+      Name = cfg.aws_bucket;
     }
     public AwsBucket(string profileName, string bucketName)
     {
       AWSConfig cfg = new AWSConfig(profileName);
       s3Client = GetS3Client(cfg);
-      this.bucketName = bucketName;
+      this.Name = bucketName;
     }
     private static AmazonS3Client GetS3Client(AWSConfig cfg)
     {
@@ -55,10 +56,10 @@ namespace usace.cc.plugin
     {
       var request = new PutBucketRequest
       {
-        BucketName = bucketName,
+        BucketName = Name,
         UseClientRegion = true // use the same region as the client
       };
-      bool exists = await AmazonS3Util.DoesS3BucketExistV2Async(s3Client, bucketName);
+      bool exists = await AmazonS3Util.DoesS3BucketExistV2Async(s3Client, Name);
       if (!exists)
       {
         try
@@ -78,7 +79,7 @@ namespace usace.cc.plugin
     {
       DeleteObjectRequest request = new DeleteObjectRequest
       {
-        BucketName = bucketName,
+        BucketName = Name,
         Key = key
       };
       try
@@ -114,7 +115,7 @@ namespace usace.cc.plugin
       {
         var request = new PutObjectRequest
         {
-          BucketName = bucketName,
+          BucketName = Name,
           Key = objectKey,
           InputStream = stream
         };
@@ -171,7 +172,7 @@ namespace usace.cc.plugin
     {
       var getObjectRequest = new GetObjectRequest
       {
-        BucketName = bucketName,
+        BucketName = Name,
         Key = key
       };
 
@@ -183,7 +184,7 @@ namespace usace.cc.plugin
     {
       var getObjectRequest = new GetObjectRequest
       {
-        BucketName = bucketName,
+        BucketName = Name,
         Key = key
       };
 
@@ -204,7 +205,7 @@ namespace usace.cc.plugin
       {
         var request = new GetObjectMetadataRequest
         {
-          BucketName = bucketName,
+          BucketName = Name,
           Key = key
         };
 
@@ -231,7 +232,7 @@ namespace usace.cc.plugin
       try
       {
         var response = await s3Client.ListBucketsAsync();
-        return response.Buckets.Any(b => b.BucketName == bucketName);
+        return response.Buckets.Any(b => b.BucketName == Name);
       }
       catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
       {
@@ -244,7 +245,7 @@ namespace usace.cc.plugin
     {
       try
       {
-        await s3Client.DeleteBucketAsync(bucketName);
+        await s3Client.DeleteBucketAsync(Name);
         return true;
       }
       catch (AmazonS3Exception ex)
