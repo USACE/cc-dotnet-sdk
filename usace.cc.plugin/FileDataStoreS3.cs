@@ -1,129 +1,93 @@
-﻿using Amazon;
-using Amazon.S3;
-using Amazon.S3.Model;
-using Amazon.S3.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Amazon.S3;
 
 
 namespace usace.cc.plugin
 {
-  
+
+  /// <summary>
+  /// A IFileDataStore that uses S3 storage
+  /// 
+  /// The object Key for the S3-API calls (Get, Put, Delete, and Copy) is computed 
+  /// with a prefix read from the DataStore.Parameters['root']
+  /// 
+  /// For example: if you  call Delete(path)
+  /// the actual S3 call is Delete(prefix+/"+path)
+  /// 
+  /// </summary>
   public class FileDataStoreS3 : IFileDataStore
   {
-    //String bucket;
-    //String postFix;
-    StoreType storeType;
-    AmazonS3Client s3Client;
-    AWSConfig config;
-    //private static String S3ROOT = "root";
+    AwsBucket bucket;
+    private static String S3ROOT = "root";
+    string prefix = "";
 
+    private string GetObjectKey(string path)
+    {
+      var key = Path.Combine(prefix,path);
+      return key;
+    }
 
     public FileDataStoreS3(DataStore ds)
     {
-      config = new AWSConfig();
-      config.aws_region = Utility.GetEnv(ds.DsProfile + "_" + EnvironmentVariables.AWS_DEFAULT_REGION);
-      config.aws_secret_access_key_id = Utility.GetEnv(ds.DsProfile + "_" + EnvironmentVariables.AWS_SECRET_ACCESS_KEY);
-      config.aws_region = Utility.GetEnv(ds.DsProfile + "_" + EnvironmentVariables.AWS_DEFAULT_REGION);
-      config.aws_bucket = Utility.GetEnv(ds.DsProfile + "_" + EnvironmentVariables.AWS_S3_BUCKET);
-      config.aws_mock = Boolean.Parse(Utility.GetEnv(ds.DsProfile + "_" + "S3_MOCK"));//convert to boolean;
-      config.aws_endpoint = Utility.GetEnv(ds.DsProfile + "_" + "S3_ENDPOINT");
-      config.aws_disable_ssl = Boolean.Parse(Utility.GetEnv(ds.DsProfile + "_" + "S3_DISABLE_SSL"));//convert to bool?
-      config.aws_force_path_style = Boolean.Parse(Utility.GetEnv(ds.DsProfile + "_" + "S3_FORCE_PATH_STYLE"));//convert to bool
-      AddS3Bucket(config);
-
-    }
-
-   
-
-      private async void AddS3Bucket(AWSConfig config) { 
-
-      string bucketName = config.aws_bucket;
-      RegionEndpoint bucketRegion = RegionEndpoint.GetBySystemName(config.aws_region);
-      s3Client = new AmazonS3Client(bucketRegion);
-
-      if (config.aws_mock)
+      if( !ds.Parameters.TryGetValue(S3ROOT, out prefix))
       {
-        return;
-        //AWSCredentials aWSCredentials = new BasicAWSCredentials(acfg.aws_access_key_id, acfg.aws_secret_access_key_id);
-        //ClientConfig config = new ClientConfig();
-        //config.SignerOverride();
-        
-        //s3Client = AmazonS3C
-       }
-
-      if (!await(AmazonS3Util.DoesS3BucketExistV2Async(s3Client, bucketName)))
-      {
-        var putBucketRequest = new PutBucketRequest
-        {
-          BucketName = bucketName,
-          UseClientRegion = true
-        };
-        try
-        {
-          PutBucketResponse putBucketResponse = await s3Client.PutBucketAsync(putBucketRequest);
-        }
-        catch (AmazonS3Exception e)
-        {
-          Console.WriteLine("Error encountered on server. Message:'{0}' when writing an object", e.Message);
-        }
-
+        throw new Exception("The DataStore Parameters did not contain the key [" + S3ROOT + "]");
       }
+      prefix = prefix.TrimStart('/');
+      bucket = new AwsBucket(ds.DsProfile);
     }
+
     public bool Copy(IFileDataStore destStore, string srcPath, string destPath)
     {
-      throw new NotImplementedException();
+      try
+      {
+        var data = GetObjectBytes(srcPath);
+        MemoryStream ms = new MemoryStream(data);
+        return destStore.Put(ms, destPath);
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e.Message);
+        return false;
+      }
+    }
+
+    private byte[] GetObjectBytes(string srcPath)
+    {
+      
+      var rval = Task.Run(() =>
+         bucket.ReadObjectAsBytes(GetObjectKey(srcPath))).GetAwaiter().GetResult();
+      return rval;
     }
 
     public bool Delete(string path)
     {
-      throw new NotImplementedException();
+      bool rval = Task.Run(() =>
+          bucket.DeleteObject(GetObjectKey(path))).GetAwaiter().GetResult();
+      return rval;
+    }
+    public async Task<bool> DeleteAsync(string path)
+    {
+      var rval = await bucket.DeleteObject(GetObjectKey(path));
+      return rval;
     }
 
-   
-    public async Task<byte[]> ReadBytes(string objectName)
+    
+    public async Task<bool> PutAsync(Stream data, string path)
     {
-      RegionEndpoint bucketRegion = RegionEndpoint.GetBySystemName(config.aws_region);
-      IAmazonS3 client = new AmazonS3Client(bucketRegion);
-      var rval = new byte[0];
-      try
-      {
-        GetObjectRequest request = new GetObjectRequest
-        {
-          BucketName = config.aws_bucket,
-          Key = objectName
-        };
-        var size = request.ByteRange.End - request.ByteRange.Start;
-        using (GetObjectResponse response = await client.GetObjectAsync(request))
-        {
-          using (Stream responseStream = response.ResponseStream)
-          {
-            rval = Utility.ReadBytes(responseStream);
-          }
-        }
-      }
-      catch (AmazonS3Exception e)
-      {
-        // If bucket or object does not exist
-        Console.WriteLine("Error encountered ***. Message:'{0}' when reading object", e.Message);
-      }
-      catch (Exception e)
-      {
-        Console.WriteLine("Unknown encountered on server. Message:'{0}' when reading object", e.Message);
-      }
-      return rval;
+      return await bucket.CreateObject(GetObjectKey(path), data);
     }
     public bool Put(Stream data, string path)
     {
-      throw new NotImplementedException();
+      bool rval = Task.Run(() =>
+          bucket.CreateObject(GetObjectKey(path), data)).GetAwaiter().GetResult();
+      return rval;
     }
 
-    Stream IFileDataStore.Get(string path)
+    public Stream Get(string path)
     {
-      throw new NotImplementedException();
+      var rval = Task.Run(() =>
+      bucket.ReadObjectAsStream(GetObjectKey(path))).GetAwaiter().GetResult();
+      return rval;
     }
   }
 }

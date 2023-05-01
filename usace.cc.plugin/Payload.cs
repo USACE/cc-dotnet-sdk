@@ -1,4 +1,7 @@
-﻿namespace usace.cc.plugin
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace usace.cc.plugin
 {
     public class Payload
     {
@@ -7,12 +10,34 @@
     public DataSource[] Inputs { get; set; }
     public DataSource[] Outputs { get; set; }
 
-    public Payload()
+    public static Payload FromJson(string json)
     {
-      Attributes = new Dictionary<string, Object>();
-      Stores = new DataStore[0];
-      Inputs = new DataSource[0];
-      Outputs = new DataSource[0];
+      JsonSerializerOptions options = new JsonSerializerOptions();
+      options.PropertyNameCaseInsensitive = true;
+      options.Converters.Add(new StoreTypeConverter());
+
+      Payload p = JsonSerializer.Deserialize<Payload>(json, options);
+
+      return p;
+    }
+  }
+  class StoreTypeConverter : JsonConverter<StoreType>
+  {
+    public override StoreType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+      if (Enum.TryParse<StoreType>(reader.GetString(), out var value))
+      {
+        return value;
+      }
+      else
+      {
+        throw new JsonException($"Invalid enum value: {reader.GetString()}");
+      }
+    }
+
+    public override void Write(Utf8JsonWriter writer, StoreType value, JsonSerializerOptions options)
+    {
+      writer.WriteStringValue(value.ToString());
     }
   }
 }

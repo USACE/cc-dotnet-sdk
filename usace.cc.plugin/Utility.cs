@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 
 namespace usace.cc.plugin
 {
@@ -11,7 +6,7 @@ namespace usace.cc.plugin
   {
     internal static string GetEnv(string name)
     {
-      string? x = Environment.GetEnvironmentVariable(name);
+      string x = Environment.GetEnvironmentVariable(name);
 
       if (x == null)
         return "";
@@ -49,7 +44,7 @@ namespace usace.cc.plugin
         }
         else if (type == "ATTR")
         {
-          object? obj;
+          object obj;
           if( attributes.TryGetValue(variableName, out obj))
           { 
             if( obj != null )
