@@ -21,7 +21,7 @@ namespace usace.cc.plugin
       return p;
     }
   }
-  public class StoreTypeConverter : JsonConverter<StoreType>
+  class StoreTypeConverter : JsonConverter<StoreType>
   {
     public override StoreType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

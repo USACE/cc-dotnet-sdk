@@ -6,14 +6,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Utilities.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Include="Utilities.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <PackageReference Include="AWSSDK.S3" Version="3.7.103.51" />
 	</ItemGroup>
 
