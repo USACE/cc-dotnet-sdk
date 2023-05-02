@@ -21,12 +21,7 @@ namespace usace.cc.plugin
       s3Client = GetS3Client(cfg);
       Name = cfg.aws_bucket;
     }
-    public AwsBucket(string profileName, string bucketName)
-    {
-      AWSConfig cfg = new AWSConfig(profileName);
-      s3Client = GetS3Client(cfg);
-      this.Name = bucketName;
-    }
+     
     private static AmazonS3Client GetS3Client(AWSConfig cfg)
     {
       var awsConfig = new AmazonS3Config()

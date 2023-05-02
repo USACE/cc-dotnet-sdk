@@ -16,6 +16,10 @@ namespace usace.cc.plugin
     public byte[] GetObject(GetObjectInput input);
     public Payload GetPayload();
     //public void SetPayload(Payload payload); only used in the go sdk to support cloudcompute which is written in go.
+    /// <summary>
+    /// For S3 RootPath() returns the bucket Name.
+    /// </summary>
+    /// <returns></returns>
     public String RootPath();
     public bool HandlesDataStoreType(StoreType datastoretype);
   }

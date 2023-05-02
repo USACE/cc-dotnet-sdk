@@ -18,13 +18,15 @@
     public string aws_endpoint { get; set; }
     private bool aws_disable_ssl { get; set; }
     private bool aws_force_path_style { get; set; }
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="profileName">prefix to environment variable names for connection to S3/minio</param>
     public AWSConfig(string profileName)
     {
       aws_region = Utility.GetEnv(profileName + "_" + EnvironmentVariables.AWS_DEFAULT_REGION);
       aws_access_key_id = Utility.GetEnv(profileName + "_" + EnvironmentVariables.AWS_ACCESS_KEY_ID);
       aws_secret_access_key_id = Utility.GetEnv(profileName + "_" + EnvironmentVariables.AWS_SECRET_ACCESS_KEY);
-      aws_region = Utility.GetEnv(profileName + "_" + EnvironmentVariables.AWS_DEFAULT_REGION);
       aws_bucket = Utility.GetEnv(profileName + "_" + EnvironmentVariables.AWS_S3_BUCKET);
       aws_mock = Boolean.Parse(Utility.GetEnv(profileName + "_" + "S3_MOCK"));
       aws_endpoint = Utility.GetEnv(profileName + "_" + "S3_ENDPOINT"); // used when S3_MOCK is true

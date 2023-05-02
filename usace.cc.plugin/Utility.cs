@@ -13,6 +13,7 @@ namespace usace.cc.plugin
       else
         return x;
     }
+ 
 
     /// <summary>
     /// Replaces placeholders with values from environment variables, or Attributes in the payload
@@ -21,7 +22,7 @@ namespace usace.cc.plugin
     /// <param name="path"></param>
     /// <param name="payload"></param>
     /// <returns></returns>
-    public static string PathSubstitution(string path, Dictionary<string, object> attributes)
+    public static string PathSubstitution(string path, Dictionary<string, string> attributes)
     {
 
       Regex regex = new Regex("{(?<type>ENV|ATTR)::(?<var>[^{}]+)}");
@@ -44,11 +45,10 @@ namespace usace.cc.plugin
         }
         else if (type == "ATTR")
         {
-          object obj;
-          if( attributes.TryGetValue(variableName, out obj))
+          if( attributes.TryGetValue(variableName, out string str))
           { 
-            if( obj != null )
-               rval = rval.Replace(m.Value, obj.ToString());
+            if( str != null )
+               rval = rval.Replace(m.Value, str.ToString());
           }
         }
       }
