@@ -1,7 +1,4 @@
-﻿using Amazon.S3;
-
-
-namespace usace.cc.plugin
+﻿namespace Usace.CC.Plugin
 {
 
   /// <summary>

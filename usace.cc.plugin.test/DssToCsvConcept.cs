@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace usace.cc.plugin.test
+namespace Usace.CC.Plugin.Test
 {
   /// <summary>
   /// 
@@ -55,6 +55,7 @@ namespace usace.cc.plugin.test
       string ccBucketName = "cc_bucket";
       TestUtility.SetEnv(EnvironmentVariables.CC_PROFILE + "_" + EnvironmentVariables.AWS_S3_BUCKET,ccBucketName);
       TestUtility.CreateBucket(EnvironmentVariables.CC_PROFILE);
+
      // TestUtility.InsertPayload(EnvironmentVariables.CC_PROFILE, "payload");
 
       //SetEnv("CC_PAYLOAD_FORMATTED", "True");

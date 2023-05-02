@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace usace.cc.plugin
+namespace Usace.CC.Plugin
 {
   public class Utility
   {

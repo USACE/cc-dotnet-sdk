@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <IsPackable>false</IsPackable>
 
-    <StartupObject>usace.cc.plugin.test.DssToCsvConcept</StartupObject>
+    <StartupObject>Usace.CC.Plugin.Test.DssToCsvConcept</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,6 +33,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\usace.cc.plugin\usace.cc.plugin.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 
 </Project>

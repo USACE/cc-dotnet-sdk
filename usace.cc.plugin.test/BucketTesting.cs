@@ -2,7 +2,7 @@
 using System.Text;
 using Xunit;
 
-namespace usace.cc.plugin.test
+namespace Usace.CC.Plugin.Test
 {
   public class BucketTesting
   {

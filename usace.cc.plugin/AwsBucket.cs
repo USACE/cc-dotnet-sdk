@@ -4,7 +4,7 @@ using Amazon.S3.Model;
 using Amazon.S3.Util;
 using System.Text;
 
-namespace usace.cc.plugin
+namespace Usace.CC.Plugin
 {
   /// <summary>
   /// Manage connection and functionality to a S3 bucket

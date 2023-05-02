@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace usace.cc.plugin
+namespace Usace.CC.Plugin
 {
     public class Payload
     {

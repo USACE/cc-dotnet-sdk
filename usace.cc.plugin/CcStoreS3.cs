@@ -1,4 +1,4 @@
-﻿namespace usace.cc.plugin
+﻿namespace Usace.CC.Plugin
 {
   /// <summary>
   /// CCStore3 is a special Store used by plugins to pull payloads.
