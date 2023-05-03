@@ -32,6 +32,8 @@ namespace Usace.CC.Plugin
       if(cfg.aws_mock)
       {
         awsConfig.ServiceURL = cfg.aws_endpoint;
+        awsConfig.Timeout = TimeSpan.FromSeconds(1);
+        awsConfig.MaxErrorRetry = 2;
       }
       else {
         awsConfig.RegionEndpoint = RegionEndpoint.GetBySystemName(cfg.aws_region);

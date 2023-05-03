@@ -24,6 +24,7 @@
     /// <param name="profileName">prefix to environment variable names for connection to S3/minio</param>
     public AWSConfig(string profileName)
     {
+      aws_config_name = profileName;
       aws_region = Utility.GetEnv(profileName + "_" + EnvironmentVariables.AWS_DEFAULT_REGION);
       aws_access_key_id = Utility.GetEnv(profileName + "_" + EnvironmentVariables.AWS_ACCESS_KEY_ID);
       aws_secret_access_key_id = Utility.GetEnv(profileName + "_" + EnvironmentVariables.AWS_SECRET_ACCESS_KEY);

@@ -68,6 +68,7 @@ namespace Usace.CC.Plugin.Test
         await bucket.DeleteBucket();
 
         exists = await bucket.BucketExists();
+        Assert.False(exists);
       }
 
     }

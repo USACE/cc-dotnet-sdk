@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace Usace.CC.Plugin.Test
   /// and sends these to plugins
   ///
   /// A Plugin does the following steps:
-  /// Reads the environment variables, if the payload is in a json file
+  /// Reads the environment variables, and json file with the payload
   /// 
   /// A developer manually creates a manifest. 
   /// manifest describes:
@@ -38,7 +39,7 @@ namespace Usace.CC.Plugin.Test
     //  KARL/testing/data/987/output-data/csvfile.csv
 
     //  CC/data/1/payload.json         // write permissions by CC only; readonly for plugins
-    //  $CC_PROFILE/$CC_MANIFEST_ID/payload
+    //  $CC_ROOT/$CC_MANIFEST_ID/payload
     
     
     private static void SimulateCC()
@@ -52,16 +53,26 @@ namespace Usace.CC.Plugin.Test
 
       TestUtility.SetEnv("KARL_PROFILE", "KARL");
 
-      string ccBucketName = "cc_bucket";
+      string ccBucketName = "cc-bucket";
       TestUtility.SetEnv(EnvironmentVariables.CC_PROFILE + "_" + EnvironmentVariables.AWS_S3_BUCKET,ccBucketName);
-      TestUtility.CreateBucket(EnvironmentVariables.CC_PROFILE);
+      //TestUtility.CreateBucket(EnvironmentVariables.CC_PROFILE);
+      
+      //..await bucket.CreateBucketIfNotExists();
 
-     // TestUtility.InsertPayload(EnvironmentVariables.CC_PROFILE, "payload");
+      // path to payload:  $CC_ROOT/$CC_MANIFEST_ID/payload
+      var cc_root = Environment.GetEnvironmentVariable(EnvironmentVariables.CC_ROOT);
+      var cc_profile = Environment.GetEnvironmentVariable(EnvironmentVariables.CC_PROFILE);
+      var cc_manifest_id = Environment.GetEnvironmentVariable(EnvironmentVariables.CC_MANIFEST_ID);
 
-      //SetEnv("CC_PAYLOAD_FORMATTED", "True");
+      string key = Path.Join(cc_root, cc_manifest_id, Constants.PayloadFileName);
+      string data = TestUtility.GetResourceAsText("Usace.CC.Plugin.Test.payload-dss-to-csv.json");
+
+      TestUtility.CreateBucket(cc_profile);
+      TestUtility.UploadPayloadFile(EnvironmentVariables.CC_PROFILE, key, data);
+
     }
 
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
       SimulateCC();
 
@@ -71,43 +82,54 @@ namespace Usace.CC.Plugin.Test
       pm.LogMessage(new Message("event number is: " + eventNumber));
       var payload = pm.Payload;
 
+      if( ValidPaload(pm, payload))
+      {
+        // write DSS name, record name, csv name
+        var paths = payload.Inputs[0].Paths;
+        Console.WriteLine("opening DSS file: '" +paths[0]+"'");
+        Console.WriteLine("reading record with dsspath (key): '"+paths[1]+"'");
+        Console.WriteLine("Converting to CSV file: '"+payload.Outputs[0].Paths[0]+"'");
+      }
+
+
+    }
+
+    private static bool ValidPaload(PluginManager pm, Payload payload)
+    {
       if (payload.Inputs.Length != 1)
       {
         pm.LogMessage(new Message("expected one input. Found " + payload.Inputs.Length + " inputs"));
         pm.ReportProgress(new Status(Status.StatusLevel.FAILED, 0));
-        return;
+        return false;
       }
-      if(int.TryParse(payload.Attributes["record_count"],out int record_count))
+      if (int.TryParse(payload.Attributes["record_count"], out int record_count))
       {
-        if (payload.Inputs[0].Paths.Length != 1+record_count)
+        if (payload.Inputs[0].Paths.Length != 1 + record_count)
         {
           pm.LogMessage(new Message("record_count and Path count not consistent. "));
           pm.ReportProgress(new Status(Status.StatusLevel.FAILED, 0));
-          return;
+          return false;
         }
       }
       else
       {
         pm.LogMessage(new Message("error parsing record_count to an integer"));
         pm.ReportProgress(new Status(Status.StatusLevel.FAILED, 0));
-        return;
+        return false;
       }
-      if (payload.Inputs[0].Paths.Length != 1)
+      if (payload.Inputs[0].Paths.Length != 2)
       {
         pm.LogMessage(new Message("expected one input. Found " + payload.Inputs.Length + " inputs"));
         pm.ReportProgress(new Status(Status.StatusLevel.FAILED, 0));
-        return;
+        return false;
       }
       if (payload.Outputs.Length != 1)
       {
         pm.LogMessage(new Message("expected one output. Found " + payload.Outputs.Length + " outputs"));
         pm.ReportProgress(new Status(Status.StatusLevel.FAILED, 0));
-        return;
+        return false;
       }
-
-      // write DSS name, record name, csv name
-
-
+      return true;
     }
   }
 }
