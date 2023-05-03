@@ -1,12 +1,8 @@
-﻿using Amazon;
-using Amazon.S3;
-using Amazon.S3.Model;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using Xunit;
 
-namespace usace.cc.plugin.test
+namespace Usace.CC.Plugin.Test
 {
   public class BucketTesting
   {
@@ -14,7 +10,9 @@ namespace usace.cc.plugin.test
     [Fact]
     public async void CreateBucket()
     {
-      var bucket = new AwsBucket("KARL","test-bucket-983556");
+      string profileName = "KARL";
+      TestUtility.SetEnv(profileName + "_" + EnvironmentVariables.AWS_S3_BUCKET, "test-bucket-983556");
+      var bucket = new AwsBucket(profileName);
       using (bucket)
       {
         await bucket.CreateBucketIfNotExists();
@@ -33,7 +31,9 @@ namespace usace.cc.plugin.test
     [Fact]
     public async void ObjectLifeCycle()
     {
-      AwsBucket bucket = new AwsBucket("KARL", "thyroid");
+      string profileName = "KARL";
+      TestUtility.SetEnv(profileName + "_" + EnvironmentVariables.AWS_S3_BUCKET, "thyroid");
+      AwsBucket bucket = new AwsBucket(profileName);
 
       await bucket.CreateBucketIfNotExists();
       using (bucket)
@@ -68,6 +68,7 @@ namespace usace.cc.plugin.test
         await bucket.DeleteBucket();
 
         exists = await bucket.BucketExists();
+        Assert.False(exists);
       }
 
     }

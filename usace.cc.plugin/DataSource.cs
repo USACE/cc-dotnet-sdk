@@ -1,4 +1,4 @@
-﻿namespace usace.cc.plugin
+﻿namespace Usace.CC.Plugin
 {
   /// <summary>
   /// Generic data source -- like a traditional file

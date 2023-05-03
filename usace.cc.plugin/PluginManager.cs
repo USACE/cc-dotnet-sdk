@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
-namespace usace.cc.plugin
+﻿namespace Usace.CC.Plugin
 {
   /// <summary>
   /// PluginManager is intended to be used by plugin developers.

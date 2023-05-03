@@ -4,7 +4,7 @@ using Amazon.S3.Model;
 using Amazon.S3.Util;
 using System.Text;
 
-namespace usace.cc.plugin
+namespace Usace.CC.Plugin
 {
   /// <summary>
   /// Manage connection and functionality to a S3 bucket
@@ -21,12 +21,7 @@ namespace usace.cc.plugin
       s3Client = GetS3Client(cfg);
       Name = cfg.aws_bucket;
     }
-    public AwsBucket(string profileName, string bucketName)
-    {
-      AWSConfig cfg = new AWSConfig(profileName);
-      s3Client = GetS3Client(cfg);
-      this.Name = bucketName;
-    }
+     
     private static AmazonS3Client GetS3Client(AWSConfig cfg)
     {
       var awsConfig = new AmazonS3Config()
@@ -37,6 +32,8 @@ namespace usace.cc.plugin
       if(cfg.aws_mock)
       {
         awsConfig.ServiceURL = cfg.aws_endpoint;
+        awsConfig.Timeout = TimeSpan.FromSeconds(1);
+        awsConfig.MaxErrorRetry = 2;
       }
       else {
         awsConfig.RegionEndpoint = RegionEndpoint.GetBySystemName(cfg.aws_region);

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace usace.cc.plugin
+﻿namespace Usace.CC.Plugin
 {
   /// <summary>
   /// CCStore is a special Store used by plugins to pull payloads.
@@ -16,6 +10,10 @@ namespace usace.cc.plugin
     public byte[] GetObject(GetObjectInput input);
     public Payload GetPayload();
     //public void SetPayload(Payload payload); only used in the go sdk to support cloudcompute which is written in go.
+    /// <summary>
+    /// For S3 RootPath() returns the bucket Name.
+    /// </summary>
+    /// <returns></returns>
     public String RootPath();
     public bool HandlesDataStoreType(StoreType datastoretype);
   }

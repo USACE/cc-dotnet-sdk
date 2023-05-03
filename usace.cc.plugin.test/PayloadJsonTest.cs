@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using Xunit;
 
-namespace usace.cc.plugin.test
+namespace Usace.CC.Plugin.Test
 {
   public class PayloadJsonTest
   {
@@ -41,6 +41,8 @@ namespace usace.cc.plugin.test
     public void FromJson()
     {
 			 var p = Payload.FromJson(json);
+			  Assert.Equal("seedgenerator", p.Inputs[0].Name);
+			  Assert.Equal("FFRD", p.Inputs[0].StoreName);
 			  System.Console.WriteLine(p);
 		}
 

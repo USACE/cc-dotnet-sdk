@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace usace.cc.plugin
+namespace Usace.CC.Plugin
 {
   internal class Logger
   {
