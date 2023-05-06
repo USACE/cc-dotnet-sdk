@@ -134,6 +134,10 @@
     {
       _logger.LogMessage(message);
     }
+    public void LogMessage(string text)
+    {
+      _logger.LogMessage(new Message(text));
+    }
     public void LogError(Error error)
     {
       _logger.LogError(error);

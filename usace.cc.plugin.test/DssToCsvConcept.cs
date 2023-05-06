@@ -76,19 +76,19 @@ namespace Usace.CC.Plugin.Test
     {
       SimulateCC();
 
-      var pm = new PluginManager();
-      pm.LogMessage(new Message("hello from DssToCsv Plugin"));
+      var pm = await PluginManager.CreateAsync();
+      pm.LogMessage("hello from DssToCsv Plugin");
       var eventNumber = pm.EventNumber();
-      pm.LogMessage(new Message("event number is: " + eventNumber));
+      pm.LogMessage("event number is: " + eventNumber);
       var payload = pm.Payload;
 
       if( ValidPaload(pm, payload))
       {
         // write DSS name, record name, csv name
         var paths = payload.Inputs[0].Paths;
-        Console.WriteLine("opening DSS file: '" +paths[0]+"'");
-        Console.WriteLine("reading record with dsspath (key): '"+paths[1]+"'");
-        Console.WriteLine("Converting to CSV file: '"+payload.Outputs[0].Paths[0]+"'");
+        pm.LogMessage("opening DSS file: '" +paths[0]+"'");
+        pm.LogMessage("reading record with dsspath (key): '"+paths[1]+"'");
+        pm.LogMessage("Converting to CSV file: '"+payload.Outputs[0].Paths[0]+"'");
       }
 
 
