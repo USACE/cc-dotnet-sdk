@@ -8,10 +8,10 @@ namespace Usace.CC.Plugin.Test
 {
   internal class HelloWorldPlugin
   {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
       Console.WriteLine("hello world");
-      var pm = new PluginManager();
+      var pm = await PluginManager.CreateAsync();
       pm.LogMessage(new Message("hello world, from .net-sdk-PluginManager."));
       var eventNumber = pm.EventNumber();
       pm.LogMessage(new Message("event number is: " + eventNumber));
