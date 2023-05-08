@@ -38,20 +38,16 @@
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
-    public bool PutObject(PutObjectInput input)
+    public async Task<bool> PutObject(PutObjectInput input)
     {
       var path = S3Path(input.FileName,input.FileExtension);
       if (input.ObjectState == ObjectState.LocalDisk)
       {
-        var rval = Task.Run(() =>
-          bucket.CreateObjectFromLocalFile(path, path)).GetAwaiter().GetResult();
-        return rval;
+        return await bucket.CreateObjectFromLocalFile(path, path);
       }
       if (input.ObjectState == ObjectState.Memory)
       {
-        var rval = Task.Run(() =>
-          bucket.CreateObject(path, input.Data)).GetAwaiter().GetResult();
-        return rval;
+        return await bucket.CreateObject(path, input.Data);
       }
 
       return false;
@@ -61,23 +57,18 @@
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
-    public bool PullObject(PullObjectInput input)
+    public async Task<bool> PullObject(PullObjectInput input)
     {
       var path = S3Path(input.FileName, input.FileExtension);
       var localPath = LocalPath(input);
 
-      var rval = Task.Run(() =>
-          bucket.SaveObjectToLocalFile(path,localPath)).GetAwaiter().GetResult();
-
-      return rval;
+      return await bucket.SaveObjectToLocalFile(path, localPath);
     }
 
-    public byte[] GetObject(GetObjectInput input)
+    public async Task<byte[]> GetObject(GetObjectInput input)
     {
       var path = S3Path(input.FileName, input.FileExtension);
-      var rval = Task.Run(() =>
-        bucket.ReadObjectAsBytes(path)).GetAwaiter().GetResult();
-      return rval;
+      return await bucket.ReadObjectAsBytes(path);
     }
 
     public string RootPath()
@@ -89,13 +80,11 @@
     /// Reads json payload from S3
     /// </summary>
     /// <returns></returns>
-    public Payload GetPayload()
+    public async Task<Payload> GetPayload()
     {
       var key = Path.Combine(root,manifestId,Constants.PayloadFileName);
 
-      var json = Task.Run(() =>
-        bucket.ReadObjectAsText(key)).GetAwaiter().GetResult();
-
+      var json = await bucket.ReadObjectAsText(key);
       Payload p = Payload.FromJson(json);
       return p;
     }

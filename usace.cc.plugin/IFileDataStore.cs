@@ -2,9 +2,9 @@
 {
   public interface IFileDataStore
   {
-    public Boolean Copy(IFileDataStore destStore, String srcPath, String destPath);
-    public Stream Get(String path);
-    public Boolean Put(Stream data, String path);
-    public Boolean Delete(String path);
+    public Task<bool> Copy(IFileDataStore destStore, String srcPath, String destPath);
+    public Task<Stream> Get(String path);
+    public Task<bool> Put(Stream data, String path);
+    public Task<bool> Delete(String path);
   }
 }

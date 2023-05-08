@@ -5,10 +5,10 @@
   /// </summary>
   public interface CcStore
   {
-    public bool PutObject(PutObjectInput input);
-    public bool PullObject(PullObjectInput input);
-    public byte[] GetObject(GetObjectInput input);
-    public Payload GetPayload();
+    public Task<bool> PutObject(PutObjectInput input);
+    public Task<bool> PullObject(PullObjectInput input);
+    public Task<byte[]> GetObject(GetObjectInput input);
+    public Task<Payload> GetPayload();
     //public void SetPayload(Payload payload); only used in the go sdk to support cloudcompute which is written in go.
     /// <summary>
     /// For S3 RootPath() returns the bucket Name.

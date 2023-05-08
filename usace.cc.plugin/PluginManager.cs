@@ -8,14 +8,23 @@
     Logger _logger;
     CcStoreS3 cs;
     public Payload Payload { get; private set; }
-    public PluginManager()
+
+    private PluginManager()  {    }
+
+    public static Task<PluginManager> CreateAsync()
+    {
+      var rval = new PluginManager();
+      return rval.InitializeAsync();
+    }
+
+    private async Task<PluginManager> InitializeAsync()
     {
       string sender = Utility.GetEnv(EnvironmentVariables.CC_PLUGIN_DEFINITION);
       _logger = new Logger(sender, Error.Level.WARN);
       cs = new CcStoreS3();
       try
       {
-        Payload = cs.GetPayload();
+        Payload = await cs.GetPayload();
         int i = 0;
         foreach (DataStore store in Payload.Stores)
         {
@@ -43,7 +52,7 @@
         Console.WriteLine(e.Message);
         Console.WriteLine(e.StackTrace);
       }
-
+      return this;
     }
     private void substitutePathVariables(DataSource[] sources)
     {
@@ -80,10 +89,10 @@
     {
       return Payload.Outputs;
     }
-    public byte[] getFile(DataSource ds, int path)
+    public async Task<byte[]> getFile(DataSource ds, int path)
     {
       IFileDataStore store = getFileStore(ds.StoreName);
-      Stream reader = store.Get(ds.Paths[path]);
+      var reader = await store.Get(ds.Paths[path]);
       byte[] data = new byte[0];
       try
       {
@@ -96,23 +105,23 @@
         return null;
       }
     }
-    public bool PutFile(byte[] data, DataSource ds, int path)
+    public async Task<bool> PutFile(byte[] data, DataSource ds, int path)
     {
       var store = getFileStore(ds.StoreName);
       var stream = new MemoryStream(data);
-      return store.Put(stream, ds.Paths[path]);
+      return await store.Put(stream, ds.Paths[path]);
     }
-    public bool FileWriter(Stream inputstream, DataSource destDs, int destPath)
+    public Task<bool> FileWriter(Stream inputstream, DataSource destDs, int destPath)
     {
       var store = getFileStore(destDs.StoreName);
       return store.Put(inputstream, destDs.Paths[destPath]);
     }
-    public Stream FileReader(DataSource ds, int path)
+    public async Task<Stream> FileReader(DataSource ds, int path)
     {
       var store = getFileStore(ds.StoreName);
-      return store.Get(ds.Paths[path]);
+      return await store.Get(ds.Paths[path]);
     }
-    public Stream FileReaderByName(String dataSourceName, int path)
+    public Task<Stream> FileReaderByName(String dataSourceName, int path)
     {
       DataSource ds = findDataSource(dataSourceName, getInputDataSources());
       return FileReader(ds, path);
@@ -124,6 +133,10 @@
     public void LogMessage(Message message)
     {
       _logger.LogMessage(message);
+    }
+    public void LogMessage(string text)
+    {
+      _logger.LogMessage(new Message(text));
     }
     public void LogError(Error error)
     {

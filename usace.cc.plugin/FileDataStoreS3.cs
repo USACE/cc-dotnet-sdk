@@ -33,13 +33,13 @@
       bucket = new AwsBucket(ds.DsProfile);
     }
 
-    public bool Copy(IFileDataStore destStore, string srcPath, string destPath)
+    public async Task<bool> Copy(IFileDataStore destStore, string srcPath, string destPath)
     {
       try
       {
-        var data = GetObjectBytes(srcPath);
+        var data = await GetObjectBytes(srcPath);
         MemoryStream ms = new MemoryStream(data);
-        return destStore.Put(ms, destPath);
+        return await destStore.Put(ms, destPath);
       }
       catch (Exception e)
       {
@@ -48,43 +48,28 @@
       }
     }
 
-    private byte[] GetObjectBytes(string srcPath)
+    private async Task<byte[]> GetObjectBytes(string srcPath)
     {
-      
-      var rval = Task.Run(() =>
-         bucket.ReadObjectAsBytes(GetObjectKey(srcPath))).GetAwaiter().GetResult();
-      return rval;
+      return await bucket.ReadObjectAsBytes(GetObjectKey(srcPath));
     }
 
-    public bool Delete(string path)
+    public async Task<bool> Delete(string path)
     {
-      bool rval = Task.Run(() =>
-          bucket.DeleteObject(GetObjectKey(path))).GetAwaiter().GetResult();
-      return rval;
+      return await bucket.DeleteObject(GetObjectKey(path));
     }
-    public async Task<bool> DeleteAsync(string path)
-    {
-      var rval = await bucket.DeleteObject(GetObjectKey(path));
-      return rval;
-    }
-
     
     public async Task<bool> PutAsync(Stream data, string path)
     {
       return await bucket.CreateObject(GetObjectKey(path), data);
     }
-    public bool Put(Stream data, string path)
+    public async Task<bool> Put(Stream data, string path)
     {
-      bool rval = Task.Run(() =>
-          bucket.CreateObject(GetObjectKey(path), data)).GetAwaiter().GetResult();
-      return rval;
+      return await bucket.CreateObject(GetObjectKey(path), data);
     }
 
-    public Stream Get(string path)
+    public async Task<Stream> Get(string path)
     {
-      var rval = Task.Run(() =>
-      bucket.ReadObjectAsStream(GetObjectKey(path))).GetAwaiter().GetResult();
-      return rval;
+      return await bucket.ReadObjectAsStream(GetObjectKey(path));
     }
   }
 }
