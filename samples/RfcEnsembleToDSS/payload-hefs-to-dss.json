@@ -1,0 +1,26 @@
+{
+	"attributes": {
+		"date": "2023-05-11T12:00",
+		"watershedName": "RussianNapa",
+		"location": "UKAC1" 
+	},
+	"stores": [
+		{
+			"Name": "KARL",
+			"ID": "happy",
+			"StoreType": "S3",
+			"DsProfile": "KARL",
+			"Parameters": {
+				"root": "/testing"
+
+			},
+			"Session": null
+		}
+	],
+	"outputs": [{
+		"Name": "Output DSS dataset",
+		"ID": "happy",
+		"Paths": [ "data/output-data/{ATTR::date}_{ATTR::location}.dss" ],
+		"StoreName": "KARL"
+	}]
+}

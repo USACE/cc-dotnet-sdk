@@ -32,7 +32,6 @@
           {
             case StoreType.S3:
               store.Session = new FileDataStoreS3(store);
-              Payload.Stores[i] = store;
               break;
             case StoreType.WS:
             case StoreType.RDBMS:
@@ -56,6 +55,8 @@
     }
     private void substitutePathVariables(DataSource[] sources)
     {
+      if (sources == null) return;
+
       for (int i = 0; i < sources.Length; i++)
       {
         for (int j = 0; j < sources[i].Paths.Length; j++)
@@ -105,6 +106,12 @@
         return null;
       }
     }
+    public async Task<bool> PutFile(string localFileName, DataSource ds, int path)
+    {
+      var rawBytes = File.ReadAllBytes(localFileName);
+      return await PutFile(rawBytes, ds,path);
+    }
+
     public async Task<bool> PutFile(byte[] data, DataSource ds, int path)
     {
       var store = getFileStore(ds.StoreName);

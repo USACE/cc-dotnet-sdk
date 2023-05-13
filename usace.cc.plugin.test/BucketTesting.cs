@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using Xunit;
 
@@ -7,11 +8,16 @@ namespace Usace.CC.Plugin.Test
   public class BucketTesting
   {
 
+    private static void SetEnv(string name, string value)
+    {
+      Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.Process);
+    }
+
     [Fact]
     public async void CreateBucket()
     {
       string profileName = "KARL";
-      TestUtility.SetEnv(profileName + "_" + EnvironmentVariables.AWS_S3_BUCKET, "test-bucket-983556");
+      SetEnv(profileName + "_" + EnvironmentVariables.AWS_S3_BUCKET, "test-bucket-983556");
       var bucket = new AwsBucket(profileName);
       using (bucket)
       {
@@ -32,7 +38,7 @@ namespace Usace.CC.Plugin.Test
     public async void ObjectLifeCycle()
     {
       string profileName = "KARL";
-      TestUtility.SetEnv(profileName + "_" + EnvironmentVariables.AWS_S3_BUCKET, "thyroid");
+      SetEnv(profileName + "_" + EnvironmentVariables.AWS_S3_BUCKET, "thyroid");
       AwsBucket bucket = new AwsBucket(profileName);
 
       await bucket.CreateBucketIfNotExists();
