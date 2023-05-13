@@ -11,7 +11,7 @@
     public static async Task Setup(string jsonPayload,string manifestID="1",string eventNumber="987",
                                  string eventID="57",string root="data",
                                  string pluginDefinition="dss-to-csv", string profile="CC",
-                                 string ccBucketName="cc-bucket" )
+                                 string ccBucketName="cc-bucket", string userProfile = "karl")
     {
       SetEnv(EnvironmentVariables.CC_MANIFEST_ID, manifestID);
       SetEnv(EnvironmentVariables.CC_EVENT_NUMBER, eventNumber);
@@ -33,6 +33,8 @@
 
       await CreateBucket(cc_profile);
       await UploadPayloadFile(EnvironmentVariables.CC_PROFILE, key, jsonPayload);
+
+      await CreateBucket(userProfile);
 
     }
     private static void SetEnv(string name, string value)

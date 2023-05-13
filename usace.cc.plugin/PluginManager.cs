@@ -25,24 +25,27 @@
       try
       {
         Payload = await cs.GetPayload();
-        int i = 0;
-        foreach (DataStore store in Payload.Stores)
-        {
-          switch (store.StoreType)
+        /*  -- DO WE need this code??
+         *  
+         *  int i = 0;
+         foreach (DataStore store in Payload.Stores)
           {
-            case StoreType.S3:
-              store.Session = new FileDataStoreS3(store);
-              break;
-            case StoreType.WS:
-            case StoreType.RDBMS:
-              Console.WriteLine("WS and RDBMS session instantiation is the responsibility of the plugin.");
-              break;
-            default:
-              Console.WriteLine("Invalid Store type");//what type was provided?
-              break;
+            switch (store.StoreType)
+            {
+              case StoreType.S3:
+                store.Session = new FileDataStoreS3(store);
+                break;
+              case StoreType.WS:
+              case StoreType.RDBMS:
+                Console.WriteLine("WS and RDBMS session instantiation is the responsibility of the plugin.");
+                break;
+              default:
+                Console.WriteLine("Invalid Store type");//what type was provided?
+                break;
+            }
+            i++;
           }
-          i++;
-        }
+        */
         substitutePathVariables(Payload.Inputs);
         substitutePathVariables(Payload.Outputs);
       }
@@ -68,7 +71,19 @@
 
     public IFileDataStore getFileStore(String storeName)
     {
-      return (IFileDataStore)findDataStore(storeName);
+      var s = findDataStore(storeName);
+      if (s.StoreType == StoreType.S3)
+      {
+        var rval = new FileDataStoreS3(s);
+        return rval;
+      }
+      var e = new Error()
+      {
+        ErrorMessage = "Can't create FileStore " + s.StoreType,
+        ErrorLevel = Error.Level.FATAL
+      };
+       LogError(e);
+      return null;
     }
     public DataStore getStore(String storeName)
     {

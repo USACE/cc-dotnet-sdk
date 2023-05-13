@@ -11,7 +11,7 @@ namespace RfcEnsembleToDSS {
       string json = GetResourceAsText("RfcEnsembleToDSS.payload-hefs-to-dss.json");
       await CCSimulator.Setup(json, manifestID: "101", eventNumber: "987",
                   eventID: "57", root: "data", pluginDefinition: "hefs-to-csv",
-                  profile: "CC", ccBucketName: "cc-bucket2");
+                  profile: "CC", ccBucketName: "cc-bucket2",userProfile:"karl");
 
 
       var pm = await PluginManager.CreateAsync();
@@ -36,7 +36,7 @@ namespace RfcEnsembleToDSS {
       //payload.Stores[0];
       //  push dss file to a data store
       DataSource ds = payload.Outputs[0];
-      //await pm.PutFile(dss, ds, 0); // -- needs work...
+      await pm.PutFile(dss, ds, 0); // -- needs work...
 
     }
 
