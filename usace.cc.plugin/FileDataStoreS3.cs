@@ -19,7 +19,7 @@
 
     private string GetObjectKey(string path)
     {
-      var key = Path.Combine(prefix,path);
+      var key = prefix + "/" + path;
       return key;
     }
 
