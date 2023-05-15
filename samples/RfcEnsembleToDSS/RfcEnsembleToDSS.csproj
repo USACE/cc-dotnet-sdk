@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="payload-hefs-to-dss.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="payload-hefs-to-dss.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hec.Dss" Version="2.0.0-Beta8" />
+    <PackageReference Include="hecdss" Version="7.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Usace.CC.Plugin\Usace.CC.Plugin.csproj" />
+    <ProjectReference Include="..\CaliforniaNevadaRfc\CaliforniaNevadaRfc.csproj" />
+  </ItemGroup>
+
+</Project>
