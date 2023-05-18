@@ -1,39 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.Net;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using Usace.CC.Plugin;
 
-namespace Usace.CC.Plugin.Test
+namespace dss2csv
 {
-  /// <summary>
-  /// 
-  /// This is a proof of concept file conversion plugin for Clould Compute (CC)
-  /// This plugin simulates converting data-sets from DSS to csv 
-  /// 
-  /// Cloud Compute creates environment variables and payloads, 
-  /// and sends these to plugins
-  ///
-  /// A Plugin does the following steps:
-  /// Reads the environment variables, and json file with the payload
-  /// 
-  /// A developer manually creates a manifest. 
-  /// manifest describes:
-  ///     compute environment: CPU/ memory/disk requirements
-  ///     docker image name
-  ///     plugin friendly name
-  ///     environment variable overrides
-  ///     How to connect/mount block stores EBS
-  ///     payload contains:   (plugins compute from info in a payload)
-  ///         - stores
-  ///         - attributes
-  ///         - inputs
-  ///         - outputs
-  /// </summary>
+   /// <summary>
+   /// 
+   /// This is a proof of concept file conversion plugin for Clould Compute (CC)
+   /// This plugin simulates converting data-sets from DSS to csv 
+   /// 
+   /// Cloud Compute creates environment variables and payloads, 
+   /// and sends these to plugins
+   ///
+   /// A Plugin does the following steps:
+   /// Reads the environment variables, and json file with the payload
+   /// 
+   /// A developer manually creates a manifest. 
+   /// manifest describes:
+   ///     compute environment: CPU/ memory/disk requirements
+   ///     docker image name
+   ///     plugin friendly name
+   ///     environment variable overrides
+   ///     How to connect/mount block stores EBS
+   ///     payload contains:   (plugins compute from info in a payload)
+   ///         - stores
+   ///         - attributes
+   ///         - inputs
+   ///         - outputs
+   /// </summary>
 
-  internal class DssToCsvConcept
+   internal class DssToCsvConcept
   {
 
     //  KARL/testing/data/input-data/file.dss
@@ -45,11 +41,23 @@ namespace Usace.CC.Plugin.Test
 
     public static async Task Main(string[] args)
     {
+         /*
+KARL_AWS_ACCESS_KEY_ID=mlbDUcvzWyoyd3gy
+KARL_AWS_DEFAULT_REGION=us-west-2
+KARL_AWS_S3_BUCKET=karl
+KARL_AWS_SECRET_ACCESS_KEY=BYj3wYldnVqBZoDcuVgq1LQYHzEgZPmR
+KARL_S3_ENDPOINT=http://192.168.206.129:9000
+KARL_S3_MOCK=True
+         */
+       //  CCSimulator.SetBucketVariables(profile: "CC", accessKey:"password",
+      //   region:"us-west-2",bucketName:"cc",accessSecret:"",endPoint: "http://192.168.206.129:9000")
 
-      string json = GetResourceAsText("Usace.CC.Plugin.Test.payload-dss-to-csv.json");
-      await CCSimulator.Setup(json, manifestID: "1",eventNumber: "987",
-                  eventID: "57",root: "data",pluginDefinition: "dss-to-csv",
-                  profile:"CC", ccBucketName:"cc-bucket");
+      string json = GetResourceAsText("dss2csv.payload-dss-to-csv.json");
+         await CCSimulator.Setup(json, manifestID: "1", eventNumber: "987",
+                     eventID: "57", root: "data", pluginDefinition: "dss-to-csv",
+                     profile: "CC", ccBucketName: "cc-bucket");
+
+       
 
 
       var pm = await PluginManager.CreateAsync();

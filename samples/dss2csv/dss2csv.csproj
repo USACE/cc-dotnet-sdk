@@ -6,4 +6,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="payload-dss-to-csv.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="payload-dss-to-csv.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Usace.CC.Plugin\Usace.CC.Plugin.csproj" />
+  </ItemGroup>
+
 </Project>
