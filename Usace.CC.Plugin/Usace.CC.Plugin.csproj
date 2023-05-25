@@ -1,10 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-	</PropertyGroup>
+	<TargetFramework>net7.0</TargetFramework>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Owner>US Army Corps of Engineers, Hydrologic Engineering Center
+    </Owner>
+    <Title>Usace.CC.Plugin</Title>
+    <Product>sace.CC.Plugin</Product>
+    <PackageDescription>
+      Usace.CC.Plugin can be used to build plugins for Cloud Compute
+    </PackageDescription>
+    <PackageVersion>1.0.1</PackageVersion>
 
+	</PropertyGroup>
+    
 	<ItemGroup>
 	  <PackageReference Include="AWSSDK.S3" Version="3.7.104.16" />
 	</ItemGroup>
