@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+
   <ItemGroup>
     <None Remove="payload-hefs-to-dss.json" />
   </ItemGroup>
@@ -17,8 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hec.Dss" Version="2.0.0-Beta8" />
-    <PackageReference Include="hecdss" Version="7.0.4" />
+    <PackageReference Include="Hec.Dss" Version="2.0.0-Beta10" />
   </ItemGroup>
 
   <ItemGroup>
