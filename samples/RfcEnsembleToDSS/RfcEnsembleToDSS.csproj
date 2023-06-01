@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hec.Dss" Version="2.0.0-Beta10" />
+    <PackageReference Include="Hec.Dss" Version="2.0.0-beta.12" />
   </ItemGroup>
 
   <ItemGroup>
