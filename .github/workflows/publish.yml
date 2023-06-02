@@ -7,6 +7,8 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+       packages: write
 
     steps:
     - name: Checkout repository
@@ -15,24 +17,15 @@ jobs:
     - name: Set up .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '7.0.x'  # Replace with the desired version of .NET SDK
+        dotnet-version: '7.0.x' 
 
     - name: Build and pack
-      run: dotnet build --configuration Release
-           dotnet pack --configuration Release --no-build --output nupkg
-
-    - name: Create release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
-
-    - name: Upload NuGet package
-      uses: actions/upload-artifact@v2
-      with:
-        name: nuget-package
-        path: ./nupkg/*.nupkg
+      run: dotnet pack --configuration Release 
+      
+    - name: Add Source
+      run: |
+         dotnet nuget add source --username USACE --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/USACE/index.json"
+     
+    - name: Publish nuget package
+      run: dotnet nuget push "./Usace.CC.Plugin/bin/Release/*.nupkg"  --api-key ${{ secrets.GITHUB_TOKEN }} --source "github" --skip-duplicate
+ 
