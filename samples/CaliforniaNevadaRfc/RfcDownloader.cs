@@ -39,7 +39,10 @@ namespace Usace.CaliforniaNevadaRfc
         try
         {
           Console.WriteLine("downloading " + zipFileName);
-          GetFile(webrequest, zipFileName);
+          //GetFile(webrequest, zipFileName);
+          Task.Run(() =>
+          GetFileAsync(webrequest, zipFileName)).GetAwaiter().GetResult();
+
         }
         catch (System.Net.WebException ex)
         {
@@ -53,35 +56,21 @@ namespace Usace.CaliforniaNevadaRfc
     }
   
 
-
-
-    /// <summary>
-    /// from https://stackoverflow.com/questions/137285/what-is-the-best-way-to-read-getresponsestream
-    /// </summary>
-    private static void GetFile(string url, string outputFilename)
+    private static async Task GetFileAsync(string url, string outputFilename)
     {
-      HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(url);
-      httpRequest.Method = "GET";
+      var httpClient = new HttpClient();
+      using var httpResponse = await httpClient.GetAsync(url);
+      using var responseStream = await httpResponse.Content.ReadAsStreamAsync();
+      using var localFileStream = new FileStream(outputFilename, FileMode.Create);
 
-      // if the URI doesn't exist, an exception will be thrown here...
-      using (HttpWebResponse httpResponse = (HttpWebResponse)httpRequest.GetResponse())
+      var buffer = new byte[4096];
+      long totalBytesRead = 0;
+      int bytesRead;
+
+      while ((bytesRead = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
       {
-        using (Stream responseStream = httpResponse.GetResponseStream())
-        {
-          using (FileStream localFileStream =
-              new FileStream(outputFilename, FileMode.Create))
-          {
-            var buffer = new byte[4096];
-            long totalBytesRead = 0;
-            int bytesRead;
-
-            while ((bytesRead = responseStream.Read(buffer, 0, buffer.Length)) > 0)
-            {
-              totalBytesRead += bytesRead;
-              localFileStream.Write(buffer, 0, bytesRead);
-            }
-          }
-        }
+        totalBytesRead += bytesRead;
+        await localFileStream.WriteAsync(buffer.AsMemory(0, bytesRead));
       }
     }
 
