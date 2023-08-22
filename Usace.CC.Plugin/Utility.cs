@@ -4,14 +4,20 @@ namespace Usace.CC.Plugin
 {
   public class Utility
   {
-    internal static string GetEnv(string name)
+    internal static string GetEnv(string name, string defaultValue="")
     {
       string x = Environment.GetEnvironmentVariable(name);
 
       if (x == null)
-        return "";
+      {
+          Console.WriteLine(  "Error: did not find environment variable:'"
+            +name+"'   using default of '"+defaultValue+"'");
+        return defaultValue;
+      }
       else
+      {
         return x;
+      }
     }
  
 
