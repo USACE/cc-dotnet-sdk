@@ -1,4 +1,6 @@
-﻿namespace Usace.CC.Plugin
+﻿using Amazon.Runtime;
+
+namespace Usace.CC.Plugin
 {
   /// <summary>
   /// PluginManager is intended to be used by plugin developers.
@@ -68,7 +70,13 @@
 
     public IFileDataStore getFileStore(String storeName)
     {
-      return (IFileDataStore)findDataStore(storeName);
+      var ds = findDataStore(storeName);
+      if (ds.StoreType != StoreType.S3)
+      {
+        Console.WriteLine("Error: unsupported FileStore type of '"
+                          + ds.StoreType + "'  storeName='" + storeName + "'");
+      }
+      return (IFileDataStore) ds.Session;
     }
     public DataStore getStore(String storeName)
     {

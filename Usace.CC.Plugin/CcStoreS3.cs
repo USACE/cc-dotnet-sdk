@@ -11,10 +11,10 @@
     string root;
     public CcStoreS3()
     {
-      var profileName = Utility.GetEnv(EnvironmentVariables.CC_PROFILE);
+      var profileName = EnvironmentVariables.CC_PROFILE;
       bucket = new AwsBucket(profileName);
       manifestId = Utility.GetEnv(EnvironmentVariables.CC_MANIFEST_ID);
-      root = Utility.GetEnv(EnvironmentVariables.CC_ROOT);
+      root = Utility.GetEnv(EnvironmentVariables.CC_ROOT,"cc_store");
     }
 
     private string S3Path(string fileName,string extension)
