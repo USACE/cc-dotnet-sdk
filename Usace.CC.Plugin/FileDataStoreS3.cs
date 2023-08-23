@@ -19,9 +19,9 @@
 
     private string GetObjectKey(string path)
     {
-            path = path.TrimStart("/");//paths combine adds path separator if it is not present at the *end* of an argument. Does not check the beginning of an argument.
+            path = path.TrimStart('/');//paths combine adds path separator if it is not present at the *end* of an argument. Does not check the beginning of an argument.
       var key = Path.Combine(prefix,path);
-            key = key.TrimStart("/");
+            key = key.TrimStart('/');
       return key;
     }
 
