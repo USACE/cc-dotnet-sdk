@@ -42,10 +42,10 @@ namespace dss2csv
     public static async Task Main(string[] args)
     {
          /*
-KARL_AWS_ACCESS_KEY_ID=mlbDUcvzWyoyd3gy
+KARL_AWS_ACCESS_KEY_ID=<access-key-here>
 KARL_AWS_DEFAULT_REGION=us-west-2
 KARL_AWS_S3_BUCKET=karl
-KARL_AWS_SECRET_ACCESS_KEY=BYj3wYldnVqBZoDcuVgq1LQYHzEgZPmR
+KARL_AWS_SECRET_ACCESS_KEY=<key>
 KARL_S3_ENDPOINT=http://192.168.206.129:9000
 KARL_S3_MOCK=True
          */
