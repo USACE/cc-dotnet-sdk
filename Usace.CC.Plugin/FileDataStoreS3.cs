@@ -19,7 +19,9 @@
 
     private string GetObjectKey(string path)
     {
+            path = path.TrimStart('/');//paths combine adds path separator if it is not present at the *end* of an argument. Does not check the beginning of an argument.
       var key = Path.Combine(prefix,path);
+            key = key.TrimStart('/');
       return key;
     }
 
@@ -64,7 +66,9 @@
     }
     public async Task<bool> Put(Stream data, string path)
     {
-      return await bucket.CreateObject(GetObjectKey(path), data);
+            var key = GetObjectKey(path);
+            Console.WriteLine("Putting object at key: " + key);
+      return await bucket.CreateObject(key, data);
     }
 
     public async Task<Stream> Get(string path)
