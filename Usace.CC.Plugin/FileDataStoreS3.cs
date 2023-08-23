@@ -68,7 +68,7 @@
     {
             var key = GetObjectKey(path);
             Console.WriteLine("Putting object at key: " + key);
-      return await bucket.CreateObject(GetObjectKey(path), data);
+      return await bucket.CreateObject(key, data);
     }
 
     public async Task<Stream> Get(string path)
