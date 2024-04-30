@@ -10,7 +10,7 @@
     <PackageDescription>
       Usace.CC.Plugin can be used to build plugins for Cloud Compute
     </PackageDescription>
-    <PackageVersion>1.0.4</PackageVersion>
+    <PackageVersion>1.0.5</PackageVersion>
 
 	</PropertyGroup>
     
