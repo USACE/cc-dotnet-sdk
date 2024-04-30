@@ -9,6 +9,7 @@ namespace Usace.CC.Plugin
     public DataStore[] Stores { get; set; }
     public DataSource[] Inputs { get; set; }
     public DataSource[] Outputs { get; set; }
+    public Action[] Actions { get;set;}
 
     public static Payload FromJson(string json)
     {
