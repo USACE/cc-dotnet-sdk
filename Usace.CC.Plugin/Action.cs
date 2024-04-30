@@ -13,6 +13,6 @@ namespace Usace.CC.Plugin
         [JsonPropertyName("desc")]
         public string Description { get; set; }
         [JsonPropertyName("params")]
-        public Map<string,string> Parameters { get; set; }
+        public Dictionary<string, string> Parameters { get; set; }
     }
 }
