@@ -12,5 +12,6 @@
     public string ID { get; set; }
     public string StoreName { get; set; }
     public string[] Paths { get; set; } // specific key or set of keys,  shape_file.[shp|shx|dbf]
+    public string[] DataPaths { get; set; } //internal data paths like dss record paths or hdf table paths.
   }
 }
