@@ -9,9 +9,9 @@ using Xunit;
 
 namespace Usace.CC.Plugin.Test
 {
-  public class PayloadJsonTest
-  {
-		static string json = @"{
+    public class PayloadJsonTest
+    {
+        static string json = @"{
 	""stores"": [{
 		""Name"": ""FFRD"",
 		""ID"": ""6ba7b810-9dad-11d1-80b4-00c04fd430c8"",
@@ -37,16 +37,16 @@ namespace Usace.CC.Plugin.Test
 }";
 
 
-		[Fact]
-    public void FromJson()
-    {
-			 var p = Payload.FromJson(json);
-			  Assert.Equal("seedgenerator", p.Inputs[0].Name);
-			  Assert.Equal("FFRD", p.Inputs[0].StoreName);
-			  System.Console.WriteLine(p);
-		}
+        [Fact]
+        public void FromJson()
+        {
+            var p = Payload.FromJson(json);
+            Assert.Equal("seedgenerator", p.Inputs[0].Name);
+            Assert.Equal("FFRD", p.Inputs[0].StoreName);
+            System.Console.WriteLine(p);
+        }
 
 
 
-}
+    }
 }
