@@ -25,11 +25,6 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Start MinIO container
-      run: |
-        docker run -d --name minio \
-          -p 9000:9000 
-          -e MINIO_ROOT_USER=AKIAIOSFODNN7EXAMPLE \
-          -e MINIO_ROOT_PASSWORD=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY \
-          quay.io/minio/minio server /data 
+      run: docker run -d --name minio -p 9000:9000 -e MINIO_ROOT_USER=AKIAIOSFODNN7EXAMPLE -e MINIO_ROOT_PASSWORD=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY quay.io/minio/minio server /data 
     - name: Test
       run: dotnet test --no-build --verbosity normal
