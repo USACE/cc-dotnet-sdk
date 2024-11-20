@@ -14,17 +14,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    services:
-      minio:
-        image: quay.io/minio/minio:latest
-        options: >-
-          --name minio
-          -e AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
-          -e AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-          quay.io/minio/minio server /data
-        ports:
-          - 9000:9000  # MinIO API port
-
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
@@ -35,21 +24,12 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-    - name: Wait for MinIO to start
+    - name: Start MinIO container
       run: |
-        # Wait for MinIO to be ready by checking if it responds on port 9000
-        for i in {1..5}; do
-          if curl -s http://localhost:9000; then
-            echo "MinIO is up!"
-            break
-          fi
-          echo "Waiting for MinIO to be ready..."
-          docker logs minio || true
-          sleep 5
-        done
-        if [ $i -eq 5 ]; then
-          echo "MinIO did not start in time, failing the test."
-          exit 1
-        fi
+        docker run -d --name minio \
+          -p 9000:9000 
+          -e MINIO_ROOT_USER=AKIAIOSFODNN7EXAMPLE \
+          -e MINIO_ROOT_PASSWORD=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY \
+          quay.io/minio/minio server /data 
     - name: Test
       run: dotnet test --no-build --verbosity normal
