@@ -35,5 +35,20 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
+    - name: Wait for MinIO to start
+      run: |
+        # Wait for MinIO to be ready by checking if it responds on port 9000
+        for i in {1..30}; do
+          if curl -s http://localhost:9000; then
+            echo "MinIO is up!"
+            break
+          fi
+          echo "Waiting for MinIO to be ready..."
+          sleep 5
+        done
+        if [ $i -eq 30 ]; then
+          echo "MinIO did not start in time, failing the test."
+          exit 1
+        fi
     - name: Test
       run: dotnet test --no-build --verbosity normal
