@@ -14,6 +14,18 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    services:
+      minio:
+        image: quay.io/minio/minio:latest
+        options: >-
+          --name minio
+          -p 9000:9000
+          -e AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+          -e AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+          quay.io/minio/minio server /data
+        ports:
+          - 9000:9000  # MinIO API port
+
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
@@ -24,5 +36,5 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-#    - name: Test
-#      run: dotnet test --no-build --verbosity normal
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
