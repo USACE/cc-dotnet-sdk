@@ -19,7 +19,6 @@ jobs:
         image: quay.io/minio/minio:latest
         options: >-
           --name minio
-          -p 9000:9000
           -e AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
           -e AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
           quay.io/minio/minio server /data
