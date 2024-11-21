@@ -5,9 +5,9 @@ name: .NET
 
 on:
   push:
-    branches: [ "main", "ubuntu" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main", "ubuntu" ]
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -19,10 +19,12 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 7.0.x
+        dotnet-version: 8.0.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-#    - name: Test
-#      run: dotnet test --no-build --verbosity normal
+    - name: Start MinIO container
+      run: docker run -d --name minio -p 9000:9000 -e MINIO_ROOT_USER=AKIAIOSFODNN7EXAMPLE -e MINIO_ROOT_PASSWORD=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY quay.io/minio/minio server /data 
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
